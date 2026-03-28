@@ -69,20 +69,14 @@ vec2 hash2( vec2 p ) {
 // === Fish Simulation Helper ===
 float drawFish(vec2 uv, vec2 center, float time) {
     vec2 p = uv - center;
-    // Rotate fish to face direction of movement
     float s = sin(time*0.5);
     float c = cos(time*0.5);
     p = mat2(c, -s, s, c) * p;
-    
-    // Body (Ellipse)
     float body = length(p * vec2(1.0, 3.0));
     float bodyMask = smoothstep(0.15, 0.1, body);
-    
-    // Tail
     vec2 tailPos = p + vec2(0.0, 0.15);
     float tail = length(tailPos * vec2(1.5, 1.0) - vec2(0.0, 0.05));
     float tailMask = smoothstep(0.1, 0.05, tail) * step(p.y, -0.1);
-    
     return max(bodyMask, tailMask);
 }
 
@@ -91,55 +85,44 @@ void main() {
   vec3 finalColor = uColor1;
 
   if (uTheme < 0.5) {
-    // 🌌 Monterey: Deep Perlin Liquid
     float noise1 = cnoise(vec3(uv * 1.5, uTime * 0.15));
     float noise2 = cnoise(vec3(uv * 2.0 - noise1, uTime * 0.1));
     vec3 color = mix(uColor1, uColor2, noise1 + 0.5);
     finalColor = mix(color, uColor3, noise2 + 0.3);
   } 
   else if (uTheme < 1.5) {
-    // ☀️ Sonoma: Pulsing Sunset Star
     vec2 pos = uv - vec2(0.5);
     float dist = length(pos);
     float pulse = sin(uTime * 4.0) * 0.03 + 0.35;
     float glow = smoothstep(pulse + 0.2, pulse - 0.4, dist);
-    
-    // Lens flare effect
     float flare = 0.01 / (dist + 0.01);
     float streaks = max(0.0, 1.0 - length(pos * vec2(10.0, 0.5))) + 
                     max(0.0, 1.0 - length(pos * vec2(0.5, 10.0)));
-    
     vec3 sunColor = mix(uColor2, uColor3, sin(uTime)*0.5+0.5);
     finalColor = mix(uColor1, sunColor, glow);
     finalColor += sunColor * flare * 0.5;
     finalColor += sunColor * streaks * 0.2;
   }
   else if (uTheme < 2.5) {
-    // 🐟 Catalina: Swimming Fish in Ocean
     float wave = sin(uv.x * 12.0 + uTime) * 0.05 + sin(uv.y * 8.0 + uTime * 1.5) * 0.03;
     vec3 ocean = mix(uColor1, uColor2, uv.y + wave);
     ocean = mix(ocean, uColor3, sin(uv.x * 20.0 - uTime * 2.0) * 0.1 + 0.1);
-    
-    // Draw 3 swimming fish
     float fish1 = drawFish(uv, vec2(sin(uTime*0.4)*0.4+0.5, cos(uTime*0.3)*0.3+0.5), uTime);
     float fish2 = drawFish(uv, vec2(sin(uTime*0.5+2.0)*0.3+0.4, cos(uTime*0.4+1.0)*0.4+0.6), uTime*1.2);
     float fish3 = drawFish(uv, vec2(sin(uTime*0.3+4.0)*0.5+0.5, cos(uTime*0.6+3.0)*0.2+0.3), uTime*0.8);
-    
     float totalFish = max(fish1, max(fish2, fish3));
     finalColor = mix(ocean, uColor3, totalFish);
   }
   else if (uTheme < 3.5) {
-    // 🧠 BigSur: Organic Biological Cells
     vec2 p = uv * 8.0;
     vec2 i = floor(p);
     vec2 f = fract(p);
     float minDist = 1.0;
     for(int y = -1; y <= 1; y++) {
       for(int x = -1; x <= 1; x++) {
-        vec2 neighbor = vec2(float(x), float(y));
-        vec2 pt = hash2(i + neighbor);
+        vec2 pt = hash2(i + vec2(float(x), float(y)));
         pt = 0.5 + 0.5 * sin(uTime * 2.5 + 6.2831 * pt);
-        minDist = min(minDist, length(neighbor + pt - f));
+        minDist = min(minDist, length(vec2(float(x), float(y)) + pt - f));
       }
     }
     float cell = smoothstep(0.3, 0.7, minDist);
@@ -148,28 +131,24 @@ void main() {
     finalColor = mix(finalColor, uColor3, pulsing * (1.0 - cell));
   }
   else {
-    // 👾 Sequoia: Modern Digital Matrix Grid
-    vec2 gridUV = fract(uv * 40.0 + vec2(uTime * 0.3, uTime * 0.5));
-    float lineX = smoothstep(0.01, 0.02, gridUV.x) - smoothstep(0.02, 0.03, gridUV.x);
-    float lineY = smoothstep(0.01, 0.02, gridUV.y) - smoothstep(0.02, 0.03, gridUV.y);
-    float grid = max(lineX, lineY);
+    // 🏔️ Sequoia: Apple Topography Contour Pattern
+    float n = cnoise(vec3(uv * 2.0, uTime * 0.1));
+    float topo = sin(n * 20.0 + uTime * 0.2);
+    float line = smoothstep(0.02, 0.0, abs(topo));
     
-    // Falling digital "code" effect
-    float code = smoothstep(0.95, 1.0, fract(uv.y * 10.0 + uTime * 2.0 + sin(floor(uv.x * 20.0))));
+    // Multi-layer topo for depth
+    float n2 = cnoise(vec3(uv * 4.0, uTime * 0.05));
+    float topo2 = sin(n2 * 40.0);
+    float line2 = smoothstep(0.01, 0.0, abs(topo2)) * 0.5;
     
-    finalColor = mix(uColor1, uColor2, grid);
-    finalColor = mix(finalColor, uColor3, code * 0.6);
+    vec3 base = mix(uColor1, uColor2, uv.y + n * 0.3);
+    finalColor = mix(base, uColor3, line + line2);
     
-    // Vignette
-    float d = distance(uv, vec2(0.5));
-    finalColor *= step(d, 0.8) * (1.1 - d);
+    // Vibrant glow in the topography valleys
+    finalColor += uColor3 * (1.0 - abs(topo)) * 0.15;
   }
 
-  // Final Professional Vignette
-  float dist = distance(uv, vec2(0.5));
-  finalColor *= smoothstep(1.0, 0.3, dist * 0.8);
-
-  gl_FragColor = vec4(finalColor, 1.0);
+  gl_FragColor = vec4(finalColor * smoothstep(1.0, 0.3, distance(uv, vec2(0.5)) * 0.8), 1.0);
 }
 `;
 
@@ -183,44 +162,42 @@ export const THEMES = {
   Sonoma: { index: 1, c1: '#421b1b', c2: '#ca8a04', c3: '#fde047' },
   Catalina: { index: 2, c1: '#082f49', c2: '#0ea5e9', c3: '#67e8f9' },
   BigSur: { index: 3, c1: '#064e3b', c2: '#059669', c3: '#34d399' },
-  Sequoia: { index: 4, c1: '#000000', c2: '#262626', c3: '#ffffff' }
+  Sequoia: { index: 4, c1: '#1e1b4b', c2: '#4338ca', c3: '#f97316' } // Deep Navy to Vibrant Orange Topo
 };
 
 export type ThemeName = keyof typeof THEMES;
 
 function FluidShader({ activeTheme }: { activeTheme: ThemeName }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const theme = THEMES[activeTheme];
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uTheme: { value: THEMES[activeTheme].index },
-    uColor1: { value: hexToVec3(THEMES[activeTheme].c1) },
-    uColor2: { value: hexToVec3(THEMES[activeTheme].c2) },
-    uColor3: { value: hexToVec3(THEMES[activeTheme].c3) }
-  }), []); // Keep reference stable to avoid dangling uniform updates
+    uTheme: { value: theme.index },
+    uColor1: { value: hexToVec3(theme.c1) },
+    uColor2: { value: hexToVec3(theme.c2) },
+    uColor3: { value: hexToVec3(theme.c3) }
+  }), []); // Keep stable
 
   useFrame((state) => {
     if (!materialRef.current) return;
-    materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+    const u = materialRef.current.uniforms;
+    u.uTime.value = state.clock.elapsedTime;
     
-    // Set theme index immediately (no lerp for discrete branches)
-    materialRef.current.uniforms.uTheme.value = THEMES[activeTheme].index;
+    // Snap immediately (no lerp for theme index)
+    u.uTheme.value = theme.index;
 
-    const target1 = new THREE.Color(THEMES[activeTheme].c1);
-    const target2 = new THREE.Color(THEMES[activeTheme].c2);
-    const target3 = new THREE.Color(THEMES[activeTheme].c3);
+    const t1 = new THREE.Color(theme.c1);
+    const t2 = new THREE.Color(theme.c2);
+    const t3 = new THREE.Color(theme.c3);
     
-    const current1 = new THREE.Color().fromArray(materialRef.current.uniforms.uColor1.value);
-    const current2 = new THREE.Color().fromArray(materialRef.current.uniforms.uColor2.value);
-    const current3 = new THREE.Color().fromArray(materialRef.current.uniforms.uColor3.value);
+    const c1 = new THREE.Color().fromArray(u.uColor1.value).lerp(t1, 0.05);
+    const c2 = new THREE.Color().fromArray(u.uColor2.value).lerp(t2, 0.05);
+    const c3 = new THREE.Color().fromArray(u.uColor3.value).lerp(t3, 0.05);
     
-    current1.lerp(target1, 0.05);
-    current2.lerp(target2, 0.05);
-    current3.lerp(target3, 0.05);
-    
-    materialRef.current.uniforms.uColor1.value = [current1.r, current1.g, current1.b];
-    materialRef.current.uniforms.uColor2.value = [current2.r, current2.g, current2.b];
-    materialRef.current.uniforms.uColor3.value = [current3.r, current3.g, current3.b];
+    u.uColor1.value = [c1.r, c1.g, c1.b];
+    u.uColor2.value = [c2.r, c2.g, c2.b];
+    u.uColor3.value = [c3.r, c3.g, c3.b];
   });
 
   return (
@@ -240,12 +217,8 @@ function FluidShader({ activeTheme }: { activeTheme: ThemeName }) {
 export default function FluidBackground({ theme = 'Monterey' }: { theme?: ThemeName }) {
   return (
     <div className="fixed inset-0 w-full h-full -z-50 bg-black">
-      <Canvas 
-        camera={{ position: [0, 0, 1] }}
-        gl={{ antialias: true, alpha: false }}
-        dpr={[1, 2]}
-      >
-        <FluidShader activeTheme={theme} />
+      <Canvas camera={{ position: [0, 0, 1] }} gl={{ antialias: true, alpha: false }} dpr={[1, 2]}>
+        <FluidShader key={theme} activeTheme={theme} />
       </Canvas>
     </div>
   );
