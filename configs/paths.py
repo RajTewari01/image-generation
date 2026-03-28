@@ -88,6 +88,7 @@ DIFFUSION_MODELS = {
 
 # Convenience alias
 MODEL_REALISTIC_VISION = DIFFUSION_MODELS["realistic_vision"]
+MODEL_DIFCONSISTENCY = DIFFUSION_MODELS["difconsistency"]
 
 # =============================================================================
 # VAE MODELS
