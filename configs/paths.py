@@ -33,6 +33,12 @@ VAE_DIR = MODELS_DIR / "vae"
 LORA_DIR = MODELS_DIR / "lora"
 CONTROLNET_DIR = MODELS_DIR / "controlnet"
 UPSCALER_DIR = MODELS_DIR / "upscalers"
+EMBEDDING_DIR = MODELS_DIR / "embeddings"
+
+# =============================================================================
+# EMBEDDINGS
+# =============================================================================
+EMBEDDING_FASTNEGATIVE = EMBEDDING_DIR / "FastNegativeV2.pt"
 
 # =============================================================================
 # OUTPUT
@@ -58,6 +64,7 @@ CANNY_TEMP_IMAGES.mkdir(parents=True, exist_ok=True)
 DIFFUSION_MODELS = {
     # --- Anime Models ---
     "meinamix":               CHECKPOINTS_DIR / "meinamix_v11.safetensors",
+    "facebomb":               CHECKPOINTS_DIR / "facebombmix.safetensors",
     "novaporn":               CHECKPOINTS_DIR / "novaporn.safetensors",
     "bloodorangemix":         CHECKPOINTS_DIR / "bloodorangemix.safetensors",
     "abyssorangemix":         CHECKPOINTS_DIR / "abyssorangemix3.safetensors",
@@ -113,6 +120,7 @@ LORA_MODELS = {
     "car_motorbike":   LORA_DIR / "car_motorbike.safetensors",
 
     # Style LoRAs (add your own)
+    "violet_evergarden": LORA_DIR / "violet_evergarden.safetensors",
     # "my_lora": LORA_DIR / "my_lora.safetensors",
 }
 
