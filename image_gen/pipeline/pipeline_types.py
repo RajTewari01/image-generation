@@ -1,6 +1,6 @@
-from typing import List, Dict, Optional, Union, Literal
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Dict, List, Literal, Optional, Union
 
 # =============================================================================
 # STANDARD ASPECT RATIOS (use these across all pipelines)
@@ -18,13 +18,13 @@ class ControlNetConfig:
     control_type: Literal["canny", "depth", "openpose"]
     image_path: Union[str, Path]  # The generic 'image' input (depth map, canny edge, etc.)
     scale: float = 1.0
-    
+
     def __post_init__(self):
         if isinstance(self.image_path, str):
             self.image_path = Path(self.image_path)
         if not self.image_path.exists(): raise FileNotFoundError(self.image_path)
         if not self.image_path.is_file(): raise FileNotFoundError('image path must be a file path')
-        
+
 
 # Lora helper class for strict writing
 @dataclass
@@ -41,7 +41,7 @@ class LoraConfig:
 
 @dataclass
 class PipelineConfigs:
-    
+
     # --- 1. MANDATORY FIELDS (Must come first) ---
     base_model: Union[str, Path]      # Diffusion checkpoints paths.
     output_dir: Union[str, Path]      # Output paths for the generated image.
@@ -51,7 +51,7 @@ class PipelineConfigs:
         str,
         Path
     ]] = 'realistic'                  # Default: realistic VAE for general use
-    
+
     # --- 2. PROMPTS & TRIGGERS ---
     embeddings: List[Path] = field(default_factory=list) # Textual inversion embeddings to load
     neg_prompt: str = ''              # The style you dont want in your image.
@@ -72,7 +72,7 @@ class PipelineConfigs:
         "lms"                       # Smooth gradients, needs more steps
     ] = "euler_a"
     add_details: bool = False       # If True, run Diffusion upscale first (expensive)
- 
+
     # --- 5. NUMBERS (int & float) ---
     height: int = 512               # Default Height.
     width: int = 768                # Default Width.
@@ -104,29 +104,29 @@ class PipelineConfigs:
             self.base_model = Path(self.base_model)
         if isinstance(self.output_dir, str):
             self.output_dir = Path(self.output_dir)
-            
+
         # Ensure dimensions are multiples of 8
         if self.height % 8 != 0:
             self.height = ((self.height // 8) * 8)
         if self.width % 8 != 0:
             self.width = ((self.width // 8) * 8)
-            
+
         # Inject triggers into prompt
         if self.triggers:
             if self.triggers.lower() not in self.prompt.lower():
                 self.prompt = f'{self.triggers} {self.prompt}'
-                
+
         # Validation checks
         if not self.base_model.exists(): raise FileNotFoundError(self.base_model)
         if not self.base_model.is_file(): raise FileNotFoundError('base_model must be a file path')
-        
+
         if self.steps <= 0: raise ValueError("Steps needs to be more than 0.")
         if self.steps >= 45: raise ValueError("Steps needs to be less than 45.")
-        
+
         if self.cfg <= 0: raise ValueError("CFG needed to be more than 0")
         if self.cfg >= 15: raise ValueError("CFG needed to be less than 15")
-        
+
         if not self.output_dir.exists(): self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         if self.scheduler_name == "dpm++_2m_karras" and self.steps > 26:
             raise ValueError("dpm++_2m_karras is unsafe above 26 steps on low VRAM")

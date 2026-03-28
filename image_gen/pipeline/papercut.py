@@ -11,18 +11,14 @@ Usage:
     config = get_papercut_config("beautiful dragon origami", style="midjourney")
 """
 
+import random
+import sys
 from pathlib import Path
-from typing import Optional, Literal
-import sys,random
+from typing import Literal, Optional
 
 # Add project root to path
-
-from configs.paths import (
-    IMAGE_GEN_OUTPUT_DIR,
-    MODELS_DIR
-)
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from configs.paths import IMAGE_GEN_OUTPUT_DIR, MODELS_DIR
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -95,7 +91,7 @@ def _detect_style(prompt: str) -> StyleType:
     """
     import re
     prompt_lower = prompt.lower()
-    
+
     # Human/dragon keywords with weights → midjourney
     midjourney_keywords = {
         # Strong human indicators (weight 2)
@@ -110,7 +106,7 @@ def _detect_style(prompt: str) -> StyleType:
         "dragon": 2, "dragons": 2, "layered": 1, "layer": 1,
         "chinese": 1, "japanese": 1, "asian": 1,
     }
-    
+
     # Animal keywords with weights → papercutcraft
     animal_keywords = {
         "animal": 3, "bird": 2, "cat": 2, "dog": 2, "fox": 2,
@@ -120,20 +116,20 @@ def _detect_style(prompt: str) -> StyleType:
         "snake": 2, "frog": 2, "bear": 2, "panda": 2, "koala": 2,
         "creature": 1, "origami": 1,
     }
-    
+
     # Calculate scores using word boundaries
     midjourney_score = 0
     papercutcraft_score = 0
-    
+
     for keyword, weight in midjourney_keywords.items():
         # Use word boundary regex for accurate matching
         if re.search(rf'\b{keyword}\b', prompt_lower):
             midjourney_score += weight
-    
+
     for keyword, weight in animal_keywords.items():
         if re.search(rf'\b{keyword}\b', prompt_lower):
             papercutcraft_score += weight
-    
+
     # Return based on score
     if midjourney_score >= papercutcraft_score:
         return "midjourney"
@@ -159,42 +155,42 @@ def get_papercut_config(
 ) -> PipelineConfigs:
     """
     Get Papercut/Origami pipeline configuration.
-    
+
     Args:
         prompt: Your papercut art description
         style: "midjourney" (humans/dragons) or "papercutcraft" (animals)
         aspect: "portrait" (512x768), "mid" (768x768), or "wide" (960x540)
         auto_detect: If True, detect style from prompt keywords
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Auto-detect style if not specified
     if auto_detect and style is None:
         style = _detect_style(prompt)
     elif style is None:
         style = "midjourney"
-    
+
     # Get model info
     model_info = MODEL_MAP.get(style, MODEL_MAP["midjourney"])
     selected_model = model_info["file"]
     trigger = model_info["trigger"]
-    
+
     # Select template
     if style == "papercutcraft":
         template = PAPERCUTCRAFT_TEMPLATE
     else:
         template = MIDJOURNEY_TEMPLATE
-    
+
     # Get dimensions
     width, height = ASPECT_RATIOS.get(aspect, ASPECT_RATIOS["mid"])
-    
+
     print(f"✂️ [Papercut] Style: {style.upper()} ({model_info['description']})")
     print(f"   Model: {selected_model.name}")
     print(f"   Trigger: {trigger}")
     print(f"   Aspect: {aspect} ({width}x{height})")
-    
+
     # Build final prompt
     final_prompt = template.format(trigger=trigger, prompt=prompt)
 
@@ -243,14 +239,14 @@ def papercut_wide(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing papercut pipeline configurations...")
-    
+
     test_cases = [
         ("beautiful origami dragon with intricate folds",),
         ("origami fox in forest paper art",),
         ("layered paper art of a samurai warrior",),
         ("paper craft butterfly with colorful wings",),
     ]
-    
+
     for (prompt,) in test_cases:
         print(f"\n{'='*60}")
         print(f"Prompt: {prompt[:50]}...")

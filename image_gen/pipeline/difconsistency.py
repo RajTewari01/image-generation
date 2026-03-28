@@ -2,7 +2,7 @@
 DifConsistency Pipeline - Photorealistic Consistency with specialized LoRAs
 ===========================================================================
 
-Pipeline for generating ultra-consistent photorealistic images using the 
+Pipeline for generating ultra-consistent photorealistic images using the
 DifConsistency ecosystem (Checkpoint + VAE + Emb + LoRAs).
 
 Features:
@@ -15,22 +15,20 @@ Usage:
     config = photo_consistency("a delicious burger on a wooden table")
 """
 
-from pathlib import Path
-from typing import Optional, Literal, List
 import sys
+from pathlib import Path
+from typing import List, Literal, Optional
 
 # Add project root to path
-
 from configs.paths import (
-    MODELS_DIR,
+    EMBEDDING_DIFCONSISTENCY_NEG,
     IMAGE_GEN_OUTPUT_DIR,
     LORA_MODELS,
     MODEL_DIFCONSISTENCY,
+    MODELS_DIR,
     VAE_DIFCONSISTENCY,
-    EMBEDDING_DIFCONSISTENCY_NEG
 )
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -48,13 +46,13 @@ PHOTO_TEMPLATE = (
 )
 
 # The negative embedding trigger word (filename stem)
-NEGATIVE_EMBEDDING_TRIGGER = "difConsistency_negative_v2" 
+NEGATIVE_EMBEDDING_TRIGGER = "difConsistency_negative_v2"
 COMMON_NEGATIVE = f"{NEGATIVE_EMBEDDING_TRIGGER}, (worst quality, low quality:1.4), watermark, simplistic"
 
 
 @register_pipeline(
     name="difconsistency",
-    keywords=["difconsistency", "consistent", "photo consistency", "photography", 
+    keywords=["difconsistency", "consistent", "photo consistency", "photography",
               "photorealistic", "flickr", "instagram", "canon"],
     description="Ultra-consistent photorealistic images with DifConsistency ecosystem",
     types={
@@ -72,18 +70,18 @@ def get_config(
 ) -> PipelineConfigs:
     """
     Get DifConsistency pipeline configuration.
-    
+
     Args:
         prompt: User's image description
         style: "photo" (Photo LoRA), "detail" (Detail LoRA), or "raw" (Base only)
         width: Image width
         height: Image height
         use_template: Whether to wrap prompt in standard photography template
-        
+
     Returns:
         PipelineConfigs object
     """
-    
+
     # 1. Prepare Prompt
     if use_template:
         final_prompt = PHOTO_TEMPLATE.format(prompt=prompt)
@@ -92,7 +90,7 @@ def get_config(
 
     # 2. Configure LoRAs based on style
     loras = []
-    
+
     if style == "photo":
         print("[DifConsistency] Mode: PHOTO (Balance + Realism)")
         loras.append(LoraConfig(
@@ -115,17 +113,17 @@ def get_config(
         prompt=final_prompt,
         neg_prompt=COMMON_NEGATIVE,
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-        
+
         # Critical: Use the custom VAE and Embedding
         vae=VAE_DIFCONSISTENCY,
         embeddings=[EMBEDDING_DIFCONSISTENCY_NEG],
-        
+
         scheduler_name="dpm++_2m_karras",
         width=width,
         height=height,
         steps=25,
         cfg=6.0,  # Slightly lower CFG recommended for realism
-        
+
         lora=loras,
         c_net=[],
     )
@@ -157,7 +155,7 @@ if __name__ == "__main__":
         "a delicious burger on a wooden table",
         "portrait of a futuristic cyborg",
     ]
-    
+
     for p in test_prompts:
         print(f"\n{'='*60}")
         print(f"Prompt: {p}")

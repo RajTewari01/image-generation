@@ -22,13 +22,9 @@ import random
 from pathlib import Path
 from typing import Literal, Optional
 
-from configs.paths import (
-    IMAGE_GEN_OUTPUT_DIR,
-    DIFFUSION_MODELS
-)
+from configs.paths import DIFFUSION_MODELS, IMAGE_GEN_OUTPUT_DIR
 from image_gen.pipeline.pipeline_types import PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
-
 
 # =============================================================================
 # MODEL CONFIGURATION
@@ -117,7 +113,7 @@ AspectType = Literal["portrait", "landscape", "square"]
 def _detect_model(prompt: str) -> ModelType:
     """Detect best model based on prompt keywords."""
     prompt_lower = prompt.lower()
-    
+
     if "dream" in prompt_lower or "art" in prompt_lower:
         return "dreamshaper"
     if "digital" in prompt_lower or "clean" in prompt_lower:
@@ -126,19 +122,19 @@ def _detect_model(prompt: str) -> ModelType:
         return "typhoon"
     if "detail" in prompt_lower or "intricate" in prompt_lower:
         return "neverending"
-        
+
     return "realistic_vision"  # Default best
 
 
 def _detect_aspect(prompt: str) -> tuple[str, int, int]:
     """Detect aspect ratio from prompt."""
     prompt_lower = prompt.lower()
-    
+
     if "landscape" in prompt_lower or "wide" in prompt_lower or "scenery" in prompt_lower:
         return ("landscape", 768, 512)
     if "square" in prompt_lower or "icon" in prompt_lower:
         return ("square", 512, 512)
-        
+
     # Default to portrait for humans
     return ("portrait", 512, 768)
 
@@ -170,7 +166,7 @@ def get_hyperrealistic_config(
 ) -> PipelineConfigs:
     """
     Get Hyperrealistic pipeline configuration.
-    
+
     Args:
         prompt: Description of the human/scene
         model: Specific model or None for auto-detect
@@ -178,11 +174,11 @@ def get_hyperrealistic_config(
         width: Override width
         height: Override height
         random_model: If True, selects a random model
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Model Selection
     if random_model:
         model = random.choice(list(MODEL_MAP.keys()))
@@ -190,10 +186,10 @@ def get_hyperrealistic_config(
     elif model is None:
         model = _detect_model(prompt)
         print(f"🔍 Auto-detected Model: {model}")
-        
+
     selected = MODEL_MAP[model]
     print(f"📸 Hyperrealistic Mode: {selected['description']}")
-    
+
     # Aspect/Size
     if width is None or height is None:
         if aspect is not None:
@@ -201,25 +197,25 @@ def get_hyperrealistic_config(
         else:
             detected_aspect, width, height = _detect_aspect(prompt)
             print(f"📐 Detected Aspect: {detected_aspect} ({width}x{height})")
-            
+
     # Build prompt
     final_prompt = REALISTIC_TEMPLATE.format(prompt=prompt)
-    
+
     # Output directory
     output_dir = IMAGE_GEN_OUTPUT_DIR / "hyperrealistic" / model
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     return PipelineConfigs(
         base_model=selected["file"],
         output_dir=output_dir,
         prompt=final_prompt,
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-        
+
         # dpm++_2m_karras is best for realism but euler_a is safer for VRAM
-        scheduler_name="dpm++_2m_karras", 
-        
+        scheduler_name="dpm++_2m_karras",
+
         neg_prompt=REALISTIC_NEGATIVE,
-        
+
         width=width,
         height=height,
         steps=selected["steps"],
@@ -250,14 +246,14 @@ def real_random(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing hyperrealistic pipeline...\n")
-    
+
     prompts = [
         "beautiful young woman with freckles, natural light",
         "cinematic dramatic lighting man in rain",
         "clean digital art style cyber woman",
         "dreamy intricate fantasy princess",
     ]
-    
+
     for p in prompts:
         print(f"\n📝 Prompt: {p}")
         config = get_hyperrealistic_config(p)

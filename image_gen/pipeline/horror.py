@@ -16,18 +16,13 @@ Usage:
     config = get_horror_config("vampire in gothic castle")
 """
 
-from pathlib import Path
-from typing import Optional, Literal
 import sys
+from pathlib import Path
+from typing import Literal, Optional
 
 # Add project root to path
-
-from configs.paths import (
-    IMAGE_GEN_OUTPUT_DIR,
-    MODEL_HORROR
-)
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from configs.paths import IMAGE_GEN_OUTPUT_DIR, MODEL_HORROR
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -96,7 +91,7 @@ ShotType = Literal["portrait", "character", "scene", "landscape", "action"]
 def _detect_shot_type(prompt: str) -> ShotType:
     """Detect shot type from prompt keywords."""
     prompt_lower = prompt.lower()
-    
+
     portrait_keywords = [
         "close-up", "closeup", "portrait", "face", "glamour", "headshot",
         "bust", "detailed face", "eyes"
@@ -114,7 +109,7 @@ def _detect_shot_type(prompt: str) -> ShotType:
         "graveyard", "cemetery", "forest", "ruins", "abandoned", "haunted",
         "interior", "environment"
     ]
-    
+
     # Score each type
     for kw in portrait_keywords:
         if kw in prompt_lower:
@@ -128,7 +123,7 @@ def _detect_shot_type(prompt: str) -> ShotType:
     for kw in scene_keywords:
         if kw in prompt_lower:
             return "scene"
-    
+
     return "character"  # default for horror characters
 
 
@@ -152,44 +147,44 @@ def get_horror_config(
 ) -> PipelineConfigs:
     """
     Get Horror pipeline configuration.
-    
+
     Args:
         prompt: Your horror scene description
         shot_type: "portrait", "character", "scene", "landscape", or "action"
         auto_detect: If True, detect shot type from prompt
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Auto-detect type if not specified
     if auto_detect and shot_type is None:
         shot_type = _detect_shot_type(prompt)
     elif shot_type is None:
         shot_type = "character"
-    
+
     # Configure based on shot type
     if shot_type == "portrait":
-        print(f"[Horror] Mode: PORTRAIT (glamour horror close-up)")
+        print("[Horror] Mode: PORTRAIT (glamour horror close-up)")
         template = PORTRAIT_TEMPLATE
         width, height = 512, 768
     elif shot_type == "action":
-        print(f"[Horror] Mode: ACTION (dynamic horror)")
+        print("[Horror] Mode: ACTION (dynamic horror)")
         template = ACTION_TEMPLATE
         width, height = 768, 768
     elif shot_type == "landscape":
-        print(f"[Horror] Mode: LANDSCAPE (wide horror panorama)")
+        print("[Horror] Mode: LANDSCAPE (wide horror panorama)")
         template = LANDSCAPE_TEMPLATE
         width, height = 960, 540
     elif shot_type == "scene":
-        print(f"[Horror] Mode: SCENE (environmental horror)")
+        print("[Horror] Mode: SCENE (environmental horror)")
         template = SCENE_TEMPLATE
         width, height = 768, 768
     else:  # character
-        print(f"[Horror] Mode: CHARACTER (full body horror)")
+        print("[Horror] Mode: CHARACTER (full body horror)")
         template = CHARACTER_TEMPLATE
         width, height = 576, 768
-    
+
     # Build final prompt
     final_prompt = template.format(prompt=prompt)
 
@@ -238,14 +233,14 @@ def horror_action(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing horror pipeline configurations...")
-    
+
     test_cases = [
         ("vampire portrait with glowing red eyes",),
         ("terrifying ghost chasing through dark tunnel",),
         ("haunted mansion at midnight",),
         ("horror landscape with blood moon",),
     ]
-    
+
     for (prompt,) in test_cases:
         print(f"\n{'='*60}")
         print(f"Prompt: {prompt[:50]}...")

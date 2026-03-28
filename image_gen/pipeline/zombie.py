@@ -13,20 +13,13 @@ Usage:
     config = get_zombie_config("rotting zombie in abandoned hospital", shot_type="close")
 """
 
-from pathlib import Path
-from typing import Optional, Literal
 import sys
+from pathlib import Path
+from typing import Literal, Optional
 
 # Add project root to path
-
-from configs.paths import (
-    IMAGE_GEN_OUTPUT_DIR,
-    LORA_MODELS,
-    MODEL_WALKING_DEAD,
-    MODEL_MAJICMIX
-)
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from configs.paths import IMAGE_GEN_OUTPUT_DIR, LORA_MODELS, MODEL_MAJICMIX, MODEL_WALKING_DEAD
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -114,7 +107,7 @@ ZombieType = Literal["normal", "chinese"]
 def _detect_shot_type(prompt: str) -> ShotType:
     """Detect shot type from prompt keywords."""
     prompt_lower = prompt.lower()
-    
+
     close_keywords = [
         "close-up", "closeup", "portrait", "face", "single", "one zombie",
         "detailed", "macro", "head", "bust", "solo"
@@ -129,7 +122,7 @@ def _detect_shot_type(prompt: str) -> ShotType:
         "herd", "mob", "pack", "multiple", "several", "dozens",
         "wide shot", "far", "distant", "panorama", "landscape"
     ]
-    
+
     for kw in horde_keywords:
         if kw in prompt_lower:
             return "horde"
@@ -139,7 +132,7 @@ def _detect_shot_type(prompt: str) -> ShotType:
     for kw in close_keywords:
         if kw in prompt_lower:
             return "close"
-    
+
     return "close"  # default
 
 
@@ -147,7 +140,7 @@ def _detect_zombie_type(prompt: str) -> ZombieType:
     """Detect if Chinese zombie is requested using scoring system."""
     import re
     prompt_lower = prompt.lower()
-    
+
     # Chinese zombie keywords with weights
     chinese_keywords = {
         "chinese": 3, "qing": 3, "jiangshi": 3, "hopping vampire": 3,
@@ -155,25 +148,25 @@ def _detect_zombie_type(prompt: str) -> ZombieType:
         "mandarin": 1, "temple": 1, "ancient china": 3, "qing dynasty": 3,
         "hopping": 2, "hong kong": 1, "mr vampire": 2,
     }
-    
+
     # Western/normal zombie keywords
     normal_keywords = {
         "walking dead": 3, "rotting": 2, "undead": 2, "apocalypse": 2,
         "gore": 2, "blood": 1, "brain": 2, "western": 2, "american": 1,
         "resident evil": 2, "infection": 2, "outbreak": 2, "virus": 1,
     }
-    
+
     chinese_score = 0
     normal_score = 0
-    
+
     for keyword, weight in chinese_keywords.items():
         if re.search(rf'\b{keyword}\b', prompt_lower):
             chinese_score += weight
-    
+
     for keyword, weight in normal_keywords.items():
         if re.search(rf'\b{keyword}\b', prompt_lower):
             normal_score += weight
-    
+
     # Return based on score (chinese needs to win clearly)
     if chinese_score > normal_score:
         return "chinese"
@@ -201,39 +194,39 @@ def get_zombie_config(
 ) -> PipelineConfigs:
     """
     Get Zombie pipeline configuration.
-    
+
     Args:
         prompt: Your zombie scene description
         shot_type: "close", "mid", or "horde" (auto-detected if None)
         zombie_type: "normal" or "chinese" (auto-detected if None)
         auto_detect: If True, detect shot/zombie type from prompt
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Auto-detect types if not specified
     if auto_detect and shot_type is None:
         shot_type = _detect_shot_type(prompt)
     elif shot_type is None:
         shot_type = "close"
-        
+
     if auto_detect and zombie_type is None:
         zombie_type = _detect_zombie_type(prompt)
     elif zombie_type is None:
         zombie_type = "normal"
-    
+
     # Configure based on zombie type
     loras = []
-    
+
     if zombie_type == "chinese":
-        print(f"[Zombie] Mode: CHINESE QING (jiangshi with LoRA)")
+        print("[Zombie] Mode: CHINESE QING (jiangshi with LoRA)")
         base_model = MODEL_MAJICMIX
         template = CHINESE_ZOMBIE_TEMPLATE
         negative = CHINESE_ZOMBIE_NEGATIVE
         trigger = "Chinese_Qing_Zombie"
         width, height = 512, 768
-        
+
         loras.append(LoraConfig(
             lora_path=LORA_MODELS["chinese_zombie"],
             scale=0.8
@@ -242,23 +235,23 @@ def get_zombie_config(
         # Walking Dead zombie
         base_model = MODEL_WALKING_DEAD
         trigger = "RottingZombie person"
-        
+
         if shot_type == "horde":
-            print(f"[Zombie] Mode: HORDE (wide shot, many zombies)")
+            print("[Zombie] Mode: HORDE (wide shot, many zombies)")
             template = HORDE_TEMPLATE
             negative = HORDE_NEGATIVE
             width, height = 960, 640
         elif shot_type == "mid":
-            print(f"[Zombie] Mode: MID-SHOT (2-3 zombies)")
+            print("[Zombie] Mode: MID-SHOT (2-3 zombies)")
             template = MID_SHOT_TEMPLATE
             negative = MID_SHOT_NEGATIVE
             width, height = 768, 768
         else:
-            print(f"[Zombie] Mode: CLOSE-UP (portrait, single zombie)")
+            print("[Zombie] Mode: CLOSE-UP (portrait, single zombie)")
             template = CLOSE_UP_TEMPLATE
             negative = CLOSE_UP_NEGATIVE
             width, height = 512, 768
-    
+
     # Build final prompt
     final_prompt = template.format(trigger=trigger, prompt=prompt)
 
@@ -303,13 +296,13 @@ def chinese_zombie(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing zombie pipeline configurations...")
-    
+
     test_cases = [
         ("rotting zombie in abandoned hospital",),
         ("horde of zombies attacking city", ),
         ("chinese qing dynasty zombie with talisman",),
     ]
-    
+
     for (prompt,) in test_cases:
         print(f"\n{'='*60}")
         print(f"Prompt: {prompt[:50]}...")

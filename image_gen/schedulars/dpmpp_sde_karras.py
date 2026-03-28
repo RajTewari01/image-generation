@@ -17,13 +17,14 @@ Best For:
 
 Recommended Steps: 25-30
 
-Note: The SDE (Stochastic Differential Equation) variant adds 
-noise during sampling, which can produce more natural-looking 
+Note: The SDE (Stochastic Differential Equation) variant adds
+noise during sampling, which can produce more natural-looking
 results but uses slightly more VRAM than the 2M variant.
 """
 
-from diffusers import DPMSolverMultistepScheduler
 from typing import Callable
+
+from diffusers import DPMSolverMultistepScheduler
 
 
 def load(pipe_config) -> Callable:

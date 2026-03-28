@@ -17,13 +17,14 @@ Best For:
 
 Recommended Steps: 25-30
 
-Note: This variant uses the multi-step (2M) algorithm base with 
-SDE stochastic noise injection, providing a middle ground between 
+Note: This variant uses the multi-step (2M) algorithm base with
+SDE stochastic noise injection, providing a middle ground between
 pure deterministic and pure stochastic sampling.
 """
 
-from diffusers import DPMSolverMultistepScheduler
 from typing import Callable
+
+from diffusers import DPMSolverMultistepScheduler
 
 
 def load(pipe_config) -> Callable:

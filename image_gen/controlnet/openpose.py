@@ -13,25 +13,26 @@ Model: control_v11p_sd15_openpose.pth
 
 Usage:
     from controlnet import openpose
-    
+
     # 1. Detect pose from reference image
     pose_map = openpose.detect(reference_image)
-    
+
     # 2. Load ControlNet model
     cnet = openpose.load_model()
-    
+
     # 3. Use with pipeline (conditioning)
 """
 
-import torch
 from pathlib import Path
-from PIL import Image
 from typing import Optional
-import numpy as np
 
+import numpy as np
+import torch
+from PIL import Image
 
 from configs.paths import CONTROLNET_MODELS
-from .base import load_controlnet, unload_controlnet, flush_vram
+
+from .base import flush_vram, load_controlnet, unload_controlnet
 
 # Cached model
 _controlnet = None
@@ -45,17 +46,17 @@ def detect(
 ) -> Image.Image:
     """
     Detect human pose using OpenPose.
-    
+
     Args:
         image: Input PIL Image
         include_hand: Include hand keypoints
         include_face: Include face keypoints
-    
+
     Returns:
         Pose skeleton map as PIL Image
     """
     global _detector
-    
+
     # Lazy load detector
     if _detector is None:
         try:
@@ -66,26 +67,26 @@ def detect(
                 "controlnet_aux is required for pose detection. "
                 "Install with: pip install controlnet_aux"
             )
-    
+
     return _detector(image, include_hand=include_hand, include_face=include_face)
 
 
 def load_model(torch_dtype: torch.dtype = torch.float16):
     """
     Load the OpenPose ControlNet model.
-    
+
     Args:
         torch_dtype: Data type (float16 for less VRAM)
-    
+
     Returns:
         ControlNetModel instance
     """
     global _controlnet
-    
+
     if _controlnet is None:
         model_path = CONTROLNET_MODELS["openpose"]
         _controlnet = load_controlnet(model_path, torch_dtype)
-    
+
     return _controlnet
 
 

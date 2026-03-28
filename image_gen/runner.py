@@ -9,30 +9,29 @@ Uses isolated venv at: venvs/env/image_venv
 Usage:
     # Basic usage
     python runner.py "beautiful anime girl" --style anime
-    
+
     # With type and upscaling
     python runner.py "red sports car" --style car --type rx7 --upscale "R-ESRGAN 4x+"
-    
+
     # With seed for reproducibility
     python runner.py "ghost in hallway" --style ghost --seed 42
-    
+
     # Open result after generation
     python runner.py "zombie horde" --style zombie --type horde --open
-    
+
     # Show all available styles and types
     python runner.py --list
-    
+
     # Show detailed help
     python runner.py --help
 """
 
 import argparse
 import os
-import sys
 import platform
 import subprocess
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Ensure project root is in path for standalone execution
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -45,7 +44,7 @@ def open_file(filepath: str):
     if not os.path.exists(filepath):
         print(f"[ERROR] File not found: {filepath}")
         return
-        
+
     if platform.system() == 'Windows':
         os.startfile(filepath)
     elif platform.system() == 'Darwin':
@@ -63,19 +62,19 @@ def get_style_help(registry: dict) -> str:
         "=" * 70,
         ""
     ]
-    
+
     for name, info in sorted(registry.items()):
         lines.append(f"📦 --style {name}")
         lines.append(f"   {info['description']}")
-        
+
         if info.get("types"):
-            lines.append(f"   Available --type options:")
+            lines.append("   Available --type options:")
             for t, desc in info["types"].items():
                 lines.append(f"      {t}: {desc}")
         else:
             lines.append("   (No sub-types available)")
         lines.append("")
-    
+
     lines.append("=" * 70)
     return "\n".join(lines)
 
@@ -88,22 +87,22 @@ class CustomHelpFormatter(argparse.RawDescriptionHelpFormatter):
 
 def main():
     # Import registry and discover pipelines
-    from image_gen.pipeline.registry import (
-        discover_pipelines, 
-        get_all_pipelines, 
-        get_pipeline_names,
-        get_pipeline_types
-    )
     from image_gen.engine import DiffusionEngine
-    
+    from image_gen.pipeline.registry import (
+        discover_pipelines,
+        get_all_pipelines,
+        get_pipeline_names,
+        get_pipeline_types,
+    )
+
     # Discover all pipelines
     discover_pipelines()
     registry = get_all_pipelines()
     available_styles = get_pipeline_names()
-    
+
     # Build epilog with style details
     epilog = get_style_help(registry)
-    
+
     # Setup CLI Arguments
     parser = argparse.ArgumentParser(
         prog="runner.py",
@@ -117,15 +116,15 @@ def main():
         epilog=epilog,
         formatter_class=CustomHelpFormatter
     )
-    
+
     # Positional argument
     parser.add_argument(
-        "prompt", 
-        type=str, 
+        "prompt",
+        type=str,
         nargs="?",  # Optional to allow --list without prompt
         help="The image prompt describing what you want to generate"
     )
-    
+
     # Required style argument
     parser.add_argument(
         "--style", "-s",
@@ -133,7 +132,7 @@ def main():
         choices=available_styles,
         help="Which pipeline style to use (see below for options)"
     )
-    
+
     # Optional type (sub-style)
     parser.add_argument(
         "--type", "-t",
@@ -141,7 +140,7 @@ def main():
         default=None,
         help="Sub-type for the selected style (varies by style, see --list)"
     )
-    
+
     # Aspect ratio override (forces dimensions regardless of prompt)
     parser.add_argument(
         "--aspect", "-a",
@@ -150,14 +149,14 @@ def main():
         default=None,
         help="Force aspect ratio: portrait (512x768), landscape (768x512), normal (512x512)"
     )
-    
+
     # Add details flag (Diffusion upscaling - expensive)
     parser.add_argument(
         "--add_details", "-d",
         action="store_true",
-        help="Use Diffusion upscaler to hallucinate details (slow, runs before ESRGAN)"  
+        help="Use Diffusion upscaler to hallucinate details (slow, runs before ESRGAN)"
     )
-    
+
     # Scheduler options
     parser.add_argument(
         "--scheduler",
@@ -166,7 +165,7 @@ def main():
         default=None,
         help="Scheduler to use (default: pipeline-specific)"
     )
-    
+
     # Seed for reproducibility
     parser.add_argument(
         "--seed",
@@ -174,7 +173,7 @@ def main():
         default=None,
         help="Random seed for reproducibility (optional)"
     )
-    
+
     # Steps override
     parser.add_argument(
         "--steps",
@@ -182,7 +181,7 @@ def main():
         default=None,
         help="Number of inference steps (default: pipeline-specific, max 45)"
     )
-    
+
     # ControlNet options
     parser.add_argument(
         "--control_image",
@@ -190,7 +189,7 @@ def main():
         default=None,
         help="Path to image for ControlNet guidance"
     )
-    
+
     parser.add_argument(
         "--control_type",
         type=str,
@@ -198,35 +197,35 @@ def main():
         default=None,
         help="Type of ControlNet to use with --control_image"
     )
-    
+
     # Output options
     parser.add_argument(
         "--open", "-o",
         action="store_true",
         help="Open the generated image after saving"
     )
-    
+
     # List all styles
     parser.add_argument(
         "--list", "-l",
         action="store_true",
         help="Show all available styles and their types, then exit"
     )
-    
+
     args = parser.parse_args()
-    
+
     # Handle --list
     if args.list:
         print(get_style_help(registry))
         return 0
-    
+
     # Validate required arguments
     if not args.prompt:
         parser.error("prompt is required (or use --list to see available styles)")
-    
+
     if not args.style:
         parser.error("--style is required. Use --list to see available styles.")
-    
+
     # Validate type against selected style
     if args.type:
         valid_types = get_pipeline_types(args.style)
@@ -234,24 +233,24 @@ def main():
             print(f"\n[ERROR] Invalid --type '{args.type}' for style '{args.style}'")
             print(f"Valid types: {', '.join(valid_types.keys())}")
             return 1
-    
+
     # Get the config function from registry
     print(f"\n{'='*60}")
-    print(f"🎨 NEURAL CITADEL - Image Generator")
+    print("🎨 NEURAL CITADEL - Image Generator")
     print(f"{'='*60}")
     print(f"📦 Style: {args.style.upper()}")
     if args.type:
         print(f"🔹 Type: {args.type}")
     print(f"📝 Prompt: {args.prompt[:60]}...")
     print(f"{'='*60}\n")
-    
+
     try:
         pipeline_info = registry[args.style]
         config_function = pipeline_info["get_config"]
-        
+
         # Build kwargs for the config function
         kwargs = {"prompt": args.prompt}
-        
+
         # Handle style-specific type arguments
         if args.style == "car" and args.type:
             kwargs["style"] = args.type
@@ -276,16 +275,16 @@ def main():
                 kwargs["zombie_type"] = "chinese"
             else:
                 kwargs["shot_type"] = args.type
-        
+
         # ControlNet support
         if args.control_image:
             kwargs["control_image"] = Path(args.control_image)
         if args.control_type:
             kwargs["control_type"] = args.control_type
-        
+
         # Get the configuration
         config = config_function(**kwargs)
-        
+
         # Apply overrides
         if args.aspect:
             # Aspect override takes priority over prompt detection
@@ -300,42 +299,42 @@ def main():
             config.seed = args.seed
         if args.steps:
             config.steps = args.steps
-            
-        print(f"✓ Config loaded successfully")
+
+        print("✓ Config loaded successfully")
         print(f"  Model: {config.base_model.name}")
         print(f"  Size: {config.width}x{config.height}")
         print(f"  Steps: {config.steps}, Scheduler: {config.scheduler_name}")
         print(f"  Style Type: {config.style_type} (auto-selects upscaler)")
         if config.add_details:
-            print(f"  🎨 Add Details: Diffusion upscale enabled (slow)")
+            print("  🎨 Add Details: Diffusion upscale enabled (slow)")
         if config.seed:
             print(f"  Seed: {config.seed}")
-        
+
     except Exception as e:
         print(f"\n❌ Error loading config: {e}")
         import traceback
         traceback.print_exc()
         return 1
-    
+
     # Run the Engine
     try:
-        print(f"\n🚀 Starting generation...")
+        print("\n🚀 Starting generation...")
         engine = DiffusionEngine()
         saved_path = engine.generate(config)
-        
+
         print(f"\n{'='*60}")
-        print(f"✨ SUCCESS!")
+        print("✨ SUCCESS!")
         print(f"📁 Image saved at: {saved_path}")
         print(f"{'='*60}")
-        
+
         engine.unload()
-        
+
         if args.open:
             print("📂 Opening image...")
             open_file(str(saved_path))
-        
+
         return 0
-        
+
     except KeyboardInterrupt:
         print("\n🛑 Generation cancelled by user.")
         return 130

@@ -18,17 +18,18 @@ Best For:
 Recommended Steps: 40-60 (needs more steps than DPM++)
 
 Caution for 4GB VRAM:
-    LMS stores multiple previous steps in memory, which can 
-    increase VRAM usage. Consider using Euler A or DPM++ 2M 
+    LMS stores multiple previous steps in memory, which can
+    increase VRAM usage. Consider using Euler A or DPM++ 2M
     Karras instead if you're memory-constrained.
 
-Note: Less commonly used now since DPM++ variants achieve 
-better quality in fewer steps. Kept for compatibility with 
+Note: Less commonly used now since DPM++ variants achieve
+better quality in fewer steps. Kept for compatibility with
 older workflows and specific use cases.
 """
 
-from diffusers import LMSDiscreteScheduler
 from typing import Callable
+
+from diffusers import LMSDiscreteScheduler
 
 
 def load(pipe_config) -> Callable:

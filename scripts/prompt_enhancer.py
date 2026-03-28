@@ -14,7 +14,7 @@ Features:
 
 Usage:
     from tools.prompt_enhancer import ModelPromptEnhancer
-    
+
     enhancer = ModelPromptEnhancer(model_id=46294)  # Load model's prompts
     result = enhancer.enhance("a girl in forest")
 """
@@ -67,7 +67,7 @@ class ModelPromptEnhancer:
     def __init__(self, model_id: int = None, prompts_file: Path = None):
         """
         Initialize with a model ID or direct prompts file.
-        
+
         Args:
             model_id: CivitAI model ID (will look for model_{id}_prompts.json)
             prompts_file: Direct path to prompts JSON file
@@ -245,12 +245,12 @@ class ModelPromptEnhancer:
     ) -> EnhancedPrompt:
         """
         Enhance a prompt using learned model style.
-        
+
         Args:
             prompt: Your simple prompt
             include_loras: Whether to include commonly used LoRAs
             width/height: Override size (uses model's common size if not specified)
-        
+
         Returns:
             EnhancedPrompt with all settings
         """

@@ -20,8 +20,9 @@ Characteristics:
 Recommended Steps: 25-30
 """
 
-from diffusers import DPMSolverMultistepScheduler
 from typing import Callable
+
+from diffusers import DPMSolverMultistepScheduler
 
 
 def load(pipe_config) -> Callable:

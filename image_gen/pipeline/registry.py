@@ -7,7 +7,7 @@ Scales to any number of pipelines without hardcoded keywords.
 
 Usage:
     from image_gen.pipeline.registry import register_pipeline
-    
+
     @register_pipeline(
         name="my_style",
         keywords=["keyword1", "keyword2"],
@@ -18,8 +18,7 @@ Usage:
         return PipelineConfig(...)
 """
 
-from typing import Dict, List, Callable, Optional, Tuple, Any
-
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # Global registry - populated when pipelines import this module
 PIPELINE_REGISTRY: Dict[str, Dict[str, Any]] = {}
@@ -34,14 +33,14 @@ def register_pipeline(
 ):
     """
     Decorator to register a pipeline's get_config function.
-    
+
     Args:
         name: Unique pipeline name (e.g., "car", "zombie")
         keywords: List of keywords that trigger this pipeline
         description: Human-readable description
         category: Category type (default: "image")
         types: Dict of sub-types and their descriptions (for --type arg)
-    
+
     Example:
         @register_pipeline(
             name="car",
@@ -83,15 +82,15 @@ def get_pipeline(name: str) -> Optional[Dict[str, Any]]:
 def find_pipeline_by_keyword(text: str) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
     """
     Find a pipeline based on keywords in the text.
-    
+
     Args:
         text: User input text to match against keywords
-        
+
     Returns:
         Tuple of (pipeline_name, pipeline_info) or (None, None) if not found
     """
     text_lower = text.lower()
-    
+
     # Score each pipeline
     scores = {}
     for name, info in PIPELINE_REGISTRY.items():
@@ -101,10 +100,10 @@ def find_pipeline_by_keyword(text: str) -> Tuple[Optional[str], Optional[Dict[st
                 score += len(keyword)  # Longer matches = higher score
         if score > 0:
             scores[name] = score
-    
+
     if not scores:
         return None, None
-    
+
     # Return highest scoring pipeline
     best = max(scores, key=scores.get)
     return best, PIPELINE_REGISTRY[best]
@@ -129,18 +128,18 @@ def format_help_text() -> str:
         "=" * 70,
         ""
     ]
-    
+
     for name, info in sorted(PIPELINE_REGISTRY.items()):
         lines.append(f"📦 {name.upper()}")
         lines.append(f"   {info['description']}")
         lines.append(f"   Keywords: {', '.join(info['keywords'][:5])}...")
-        
+
         if info.get("types"):
-            lines.append(f"   Types (--type):")
+            lines.append("   Types (--type):")
             for t, desc in info["types"].items():
                 lines.append(f"      {t}: {desc}")
         lines.append("")
-    
+
     return "\n".join(lines)
 
 
@@ -163,7 +162,7 @@ def discover_pipelines():
         hyperrealistic,
         papercut,
         space,
-        zombie
+        zombie,
     )
 
 

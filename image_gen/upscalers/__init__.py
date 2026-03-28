@@ -12,7 +12,7 @@ Available Upscalers:
 
 Usage:
     from upscalers import realesrgan_4x
-    
+
     upscaled_image = realesrgan_4x.upscale(image, scale=4)
 
 All model paths are configured in: configs/paths.py
@@ -20,5 +20,4 @@ All model paths are configured in: configs/paths.py
 
 from pathlib import Path
 
-
-from configs.paths import UPSCALER_MODELS, UPSCALER_CONFIGS, get_upscaler_path
+from configs.paths import UPSCALER_CONFIGS, UPSCALER_MODELS, get_upscaler_path

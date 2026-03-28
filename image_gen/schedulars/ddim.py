@@ -18,14 +18,15 @@ Best For:
 
 Recommended Steps: 30-50 (benefits from more steps)
 
-Note: DDIM was one of the first schedulers to enable faster 
-sampling by skipping steps. Less popular now due to DPM++ 
-producing better quality at fewer steps, but still useful 
+Note: DDIM was one of the first schedulers to enable faster
+sampling by skipping steps. Less popular now due to DPM++
+producing better quality at fewer steps, but still useful
 for reproducibility and img2img.
 """
 
-from diffusers import DDIMScheduler
 from typing import Callable
+
+from diffusers import DDIMScheduler
 
 
 def load(pipe_config) -> Callable:

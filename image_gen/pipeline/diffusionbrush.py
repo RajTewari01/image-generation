@@ -14,27 +14,20 @@ Features:
 
 Usage:
     from image_gen.pipeline.diffusionbrush import get_config
-    
+
     config = get_config(
         prompt="mystic forest with glowing mushrooms",
         aspect="landscape"
     )
 """
 
-from pathlib import Path
-from typing import Optional, Literal
 import sys
+from pathlib import Path
+from typing import Literal, Optional
 
 # Add project root to path (adjusted to match ghost.py logic)
-
-from configs.paths import (
-    MODELS_DIR,
-    IMAGE_GEN_OUTPUT_DIR,
-    get_controlnet_path,
-    MODEL_DIFFUSIONBRUSH
-)
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, ControlNetConfig
+from configs.paths import IMAGE_GEN_OUTPUT_DIR, MODEL_DIFFUSIONBRUSH, MODELS_DIR, get_controlnet_path
+from image_gen.pipeline.pipeline_types import ControlNetConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 try:
@@ -110,37 +103,37 @@ WIDE_SHOT_NEGATIVE = (
 def _detect_shot_type(prompt: str) -> Literal["close", "mid", "wide"]:
     """
     Detect shot type from prompt keywords.
-    
+
     Returns: "close", "mid", or "wide"
     """
     prompt_lower = prompt.lower()
-    
+
     close_keywords = [
-        "close-up", "closeup", "portrait", "face", "detailed", 
+        "close-up", "closeup", "portrait", "face", "detailed",
         "head", "bust", "solo", "single", "eyes", "macro"
     ]
-    
+
     wide_keywords = [
         "wide", "panorama", "landscape", "scene", "environment",
         "establishing", "distant", "silhouette", "hallway", "room",
         "house", "mansion", "castle", "cemetery", "graveyard", "forest", "city", "ocean"
     ]
-    
+
     # Check keywords
     close_score = sum(1 for kw in close_keywords if kw in prompt_lower)
     wide_score = sum(1 for kw in wide_keywords if kw in prompt_lower)
-    
+
     if close_score > wide_score:
         return "close"
     elif wide_score > close_score:
         return "wide"
     else:
         return "mid"
-    
+
 
 @register_pipeline(
     name="diffusionbrush",
-    keywords=["diffusionbrush", "digital art", "painterly", "hyper realistic", 
+    keywords=["diffusionbrush", "digital art", "painterly", "hyper realistic",
               "cinematic", "epic composition", "concept art"],
     description="High-fidelity digital art with realistic textures and cinematic lighting",
     types={}
@@ -155,7 +148,7 @@ def get_config(
 ) -> PipelineConfigs:
     """
     Get DiffusionBrush pipeline configuration.
-    
+
     Args:
         prompt: User's image description
         control_image: Optional path for ControlNet input
@@ -163,11 +156,11 @@ def get_config(
         aspect: Force aspect ratio ("normal", "portrait", "landscape")
         shot_type: Force shot type ("close", "mid", "wide")
         use_enhancement: Whether to use prompt enhancement tools
-        
+
     Returns:
         PipelineConfigs object
     """
-    
+
     # 1. Auto-detect aspect ratio if not specified
     if aspect is None and HAS_TOOLS:
         width, height = detect_aspect(prompt)
@@ -179,13 +172,13 @@ def get_config(
             aspect = "landscape"
     elif aspect is None:
         aspect = "landscape"  # Default for this general-purpose painterly model
-    
+
     width, height = ASPECT_RATIOS[aspect]
-    
+
     # 2. Auto-detect shot type if not specified
     if shot_type is None:
         shot_type = _detect_shot_type(prompt)
-    
+
     # 3. Select template based on shot type
     if shot_type == "close":
         print("[DIFFUSIONBRUSH] Mode: CLOSE-UP (details, face)")
@@ -205,7 +198,7 @@ def get_config(
 
     # 4. Build final prompt
     final_prompt = template.format(trigger=trigger, prompt=prompt)
-    
+
     # 5. Optional: Enhance with CivitAI data
     if use_enhancement and HAS_TOOLS:
         try:
@@ -215,7 +208,7 @@ def get_config(
                 negative = f"{negative}, {enhanced.negative_prompt}"
         except:
             pass  # Silently fail enhancement
-    
+
     # 6. Handle ControlNet
     controlnets = []
     if control_image and control_type:
@@ -228,13 +221,13 @@ def get_config(
                 )
             )
             print(f"   🎮 ControlNet: {control_type} enabled")
-    
+
     # 7. Ensure output directory exists
     try:
         if not GENERATED_OUTPUT.exists():
             GENERATED_OUTPUT.mkdir(parents=True, exist_ok=True)
     except:pass
-    
+
     # 8. Return config
     return PipelineConfigs(
         base_model=MODEL_DIFFUSIONBRUSH,
@@ -243,14 +236,14 @@ def get_config(
         neg_prompt=negative,
         vae="realistic",  # Use realistic VAE
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-        
+
         scheduler_name="dpm++_2m_karras", # Optimized for painterly details
-        
+
         width=width,
         height=height,
         steps=25,
         cfg=7.0,
-        
+
         lora=[],
         c_net=controlnets,
     )
@@ -273,9 +266,9 @@ def landscape_brush(prompt: str, **kwargs) -> PipelineConfigs:
 def brush_with_canny(prompt: str, reference_image: Path, **kwargs) -> PipelineConfigs:
     """DiffusionBrush config with Canny ControlNet from reference image."""
     return get_config(
-        prompt, 
-        control_image=reference_image, 
-        control_type="canny", 
+        prompt,
+        control_image=reference_image,
+        control_type="canny",
         **kwargs
     )
 
@@ -291,7 +284,7 @@ if __name__ == "__main__":
         "close-up portrait of a warrior with intricate armor details",
         "wide landscape of a fantasy kingdom with floating islands",
     ]
-    
+
     for p in test_prompts:
         print(f"\n{'='*60}")
         print(f"Prompt: {p[:50]}...")

@@ -17,12 +17,13 @@ Best For:
 
 Recommended Steps: 20-25 (max 26 for low VRAM safety)
 
-Note: Uses Karras sigma schedule which provides better noise 
+Note: Uses Karras sigma schedule which provides better noise
 distribution, resulting in sharper images with less artifacts.
 """
 
-from diffusers import DPMSolverMultistepScheduler
 from typing import Callable
+
+from diffusers import DPMSolverMultistepScheduler
 
 
 def load(pipe_config) -> Callable:

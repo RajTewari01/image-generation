@@ -12,12 +12,12 @@ Aspect Ratios:
 
 Usage:
     from image_gen.tools.aspect import detect_aspect, get_dimensions
-    
+
     width, height = detect_aspect("a portrait of a woman")  # Returns (512, 768)
     width, height = detect_aspect("wide landscape sunset")   # Returns (768, 512)
 """
 
-from typing import Tuple, Literal
+from typing import Literal, Tuple
 
 # Aspect ratio dimensions
 ASPECT_RATIOS = {
@@ -32,11 +32,11 @@ PORTRAIT_KEYWORDS = [
     "portrait", "person", "woman", "man", "girl", "boy", "face", "character",
     "standing", "full body", "fullbody", "full-body", "figure", "model",
     "selfie", "headshot", "bust", "torso", "solo",
-    
+
     # Vertical compositions
     "tall", "vertical", "tower", "skyscraper", "building", "tree",
     "waterfall", "cliff", "lighthouse", "rocket", "sword", "staff",
-    
+
     # Photography terms
     "close-up", "closeup", "close up", "upper body", "upper-body",
     "half body", "half-body", "cowboy shot", "medium shot",
@@ -47,16 +47,16 @@ LANDSCAPE_KEYWORDS = [
     # Environments
     "landscape", "panorama", "panoramic", "wide shot", "wideshot", "wide-shot",
     "horizon", "skyline", "cityscape", "seascape", "mountainscape",
-    
+
     # Scenes
     "scene", "environment", "background", "vista", "view", "scenery",
     "field", "ocean", "sea", "beach", "desert", "plains", "valley",
-    
+
     # Wide compositions
     "wide", "horizontal", "banner", "cinematic", "establishing shot",
     "aerial", "birds eye", "bird's eye", "overhead", "drone",
     "room", "interior", "exterior", "architecture",
-    
+
     # Multiple subjects
     "group", "crowd", "army", "horde", "battle", "war", "many",
 ]
@@ -65,24 +65,24 @@ LANDSCAPE_KEYWORDS = [
 def detect_aspect(prompt: str) -> Tuple[int, int]:
     """
     Analyze prompt and return best width and height.
-    
+
     Args:
         prompt: The generation prompt
-        
+
     Returns:
         Tuple of (width, height)
-    
+
     Examples:
         detect_aspect("a beautiful woman portrait") -> (512, 768)
         detect_aspect("panoramic sunset over ocean") -> (768, 512)
         detect_aspect("a red apple")                 -> (512, 512)
     """
     prompt_lower = prompt.lower()
-    
+
     # Count keyword matches
     portrait_score = sum(1 for kw in PORTRAIT_KEYWORDS if kw in prompt_lower)
     landscape_score = sum(1 for kw in LANDSCAPE_KEYWORDS if kw in prompt_lower)
-    
+
     # Determine aspect ratio
     if portrait_score > landscape_score:
         return ASPECT_RATIOS["portrait"]
@@ -95,18 +95,18 @@ def detect_aspect(prompt: str) -> Tuple[int, int]:
 def get_aspect_name(prompt: str) -> Literal["normal", "portrait", "landscape"]:
     """
     Get the aspect ratio name from a prompt.
-    
+
     Args:
         prompt: The generation prompt
-        
+
     Returns:
         One of: "normal", "portrait", "landscape"
     """
     prompt_lower = prompt.lower()
-    
+
     portrait_score = sum(1 for kw in PORTRAIT_KEYWORDS if kw in prompt_lower)
     landscape_score = sum(1 for kw in LANDSCAPE_KEYWORDS if kw in prompt_lower)
-    
+
     if portrait_score > landscape_score:
         return "portrait"
     elif landscape_score > portrait_score:
@@ -118,10 +118,10 @@ def get_aspect_name(prompt: str) -> Literal["normal", "portrait", "landscape"]:
 def get_dimensions(aspect: Literal["normal", "portrait", "landscape"]) -> Tuple[int, int]:
     """
     Get dimensions for a specific aspect ratio.
-    
+
     Args:
         aspect: One of "normal", "portrait", "landscape"
-        
+
     Returns:
         Tuple of (width, height)
     """
@@ -131,27 +131,27 @@ def get_dimensions(aspect: Literal["normal", "portrait", "landscape"]) -> Tuple[
 def analyze_prompt(prompt: str) -> dict:
     """
     Full prompt analysis returning all detection info.
-    
+
     Args:
         prompt: The generation prompt
-        
+
     Returns:
         Dict with aspect, width, height, and scores
     """
     prompt_lower = prompt.lower()
-    
+
     portrait_score = sum(1 for kw in PORTRAIT_KEYWORDS if kw in prompt_lower)
     landscape_score = sum(1 for kw in LANDSCAPE_KEYWORDS if kw in prompt_lower)
-    
+
     if portrait_score > landscape_score:
         aspect = "portrait"
     elif landscape_score > portrait_score:
         aspect = "landscape"
     else:
         aspect = "normal"
-    
+
     width, height = ASPECT_RATIOS[aspect]
-    
+
     return {
         "aspect": aspect,
         "width": width,
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         "full body character design of a knight",
         "cinematic wide shot of a battle scene",
     ]
-    
+
     for p in test_prompts:
         result = analyze_prompt(p)
         print(f"\nPrompt: {p[:50]}...")

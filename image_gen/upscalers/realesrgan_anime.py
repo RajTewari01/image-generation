@@ -17,12 +17,13 @@ significantly faster and lighter while maintaining quality for anime content.
 """
 
 from pathlib import Path
-from PIL import Image
 from typing import Optional
 
+from PIL import Image
 
-from configs.paths import UPSCALER_MODELS, UPSCALER_CONFIGS
-from .base import create_upscaler, run_upscale, flush_vram
+from configs.paths import UPSCALER_CONFIGS, UPSCALER_MODELS
+
+from .base import create_upscaler, flush_vram, run_upscale
 
 # Cached upscaler instance
 _upscaler = None
@@ -31,20 +32,20 @@ _upscaler = None
 def load(half: bool = False, tile: int = 256):
     """
     Load the R-ESRGAN 4x+ Anime6B model.
-    
+
     Args:
         half: Use FP16 for less VRAM (recommended for 4GB cards)
         tile: Tile size (lower = less VRAM, try 128 for low VRAM)
-    
+
     Returns:
         RealESRGANer instance
     """
     global _upscaler
-    
+
     if _upscaler is None:
         model_path = UPSCALER_MODELS["R-ESRGAN 4x+ Anime6B"]
         config = UPSCALER_CONFIGS["R-ESRGAN 4x+ Anime6B"]
-        
+
         _upscaler = create_upscaler(
             model_path=model_path,
             model_name="RealESRGAN_x4plus_anime_6B",
@@ -53,7 +54,7 @@ def load(half: bool = False, tile: int = 256):
             half=half,
             num_block=config["num_block"]  # Only 6 blocks!
         )
-    
+
     return _upscaler
 
 
@@ -65,13 +66,13 @@ def upscale(
 ) -> Image.Image:
     """
     Upscale an image using R-ESRGAN 4x+ Anime6B.
-    
+
     Args:
         image: Input PIL Image
         scale: Output scale factor (default 4.0)
         half: Use FP16 for less VRAM
         tile: Tile size for processing
-    
+
     Returns:
         Upscaled PIL Image
     """

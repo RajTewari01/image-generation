@@ -14,20 +14,13 @@ Usage:
     config = get_ethnicity_config("beautiful woman portrait", ethnicity="indian")
 """
 
-from pathlib import Path
-from typing import Optional, Literal
 import sys
+from pathlib import Path
+from typing import Literal, Optional
 
 # Add project root to path
-
-from configs.paths import (
-    IMAGE_GEN_OUTPUT_DIR,
-    DIFFUSION_MODELS,
-    MODELS_DIR,
-    LORA_MODELS
-)
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from configs.paths import DIFFUSION_MODELS, IMAGE_GEN_OUTPUT_DIR, LORA_MODELS, MODELS_DIR
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -100,7 +93,7 @@ def _detect_ethnicity(prompt: str) -> EthnicityType:
     """
     import re
     prompt_lower = prompt.lower()
-    
+
     # Ethnicity keywords with weights
     ethnicity_scores = {
         "indian": {
@@ -127,22 +120,22 @@ def _detect_ethnicity(prompt: str) -> EthnicityType:
             "white": 1, "scandinavian": 2, "nordic": 2, "celtic": 1,
         },
     }
-    
+
     # Calculate scores for each ethnicity
     scores = {ethnicity: 0 for ethnicity in ethnicity_scores}
-    
+
     for ethnicity, keywords in ethnicity_scores.items():
         for keyword, weight in keywords.items():
             if re.search(rf'\b{keyword}\b', prompt_lower):
                 scores[ethnicity] += weight
-    
+
     # Get the ethnicity with highest score
     best_ethnicity = max(scores, key=scores.get)
-    
+
     # If no keywords matched, default to asian (most versatile)
     if scores[best_ethnicity] == 0:
         return "asian"
-    
+
     return best_ethnicity
 
 
@@ -167,50 +160,50 @@ def get_ethnicity_config(
 ) -> PipelineConfigs:
     """
     Get Ethnicity Portrait pipeline configuration.
-    
+
     Args:
         prompt: Your portrait description
         ethnicity: "asian", "indian", "russian", "european", or "chinese"
         aspect: "portrait" (512x768), "mid" (768x768), or "wide" (960x540)
         auto_detect: If True, detect ethnicity from prompt keywords
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Aspect ratio dimensions
     ASPECT_RATIOS = {
         "portrait": (512, 768),
         "mid": (768, 768),
         "wide": (960, 540),
     }
-    
+
     # Auto-detect ethnicity if not specified
     if auto_detect and ethnicity is None:
         ethnicity = _detect_ethnicity(prompt)
     elif ethnicity is None:
         ethnicity = "asian"
-    
+
     # Get model info
     model_info = MODEL_MAP.get(ethnicity, MODEL_MAP["asian"])
     selected_model = model_info["file"]
     trigger = model_info["trigger"]
-    
+
     # Get dimensions
     width, height = ASPECT_RATIOS.get(aspect, ASPECT_RATIOS["portrait"])
-    
+
     print(f"🌍 [Ethnicity] Mode: {ethnicity.upper()} ({model_info['description']})")
     print(f"   Model: {selected_model.name}")
     print(f"   Trigger: {trigger}")
     print(f"   Aspect: {aspect} ({width}x{height})")
-    
+
     # Build final prompt
     final_prompt = ETHNICITY_TEMPLATE.format(trigger=trigger, prompt=prompt)
 
     # LoRA Logic
     # LoRA Logic
     loras = []
-    
+
     # Robust Polaroid Detection
     # Matches: polaroid, poloroid, instant photo, instax
     import re
@@ -220,7 +213,7 @@ def get_ethnicity_config(
             lora_path=LORA_MODELS["polaroid"],
             scale=0.8
         ))
-    
+
     return PipelineConfigs(
         base_model=selected_model,
         output_dir=GENERATED_OUTPUT,
@@ -266,7 +259,7 @@ def chinese_portrait(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing ethnicity pipeline configurations...")
-    
+
     test_cases = [
         ("beautiful indian woman in traditional saree",),
         ("korean idol with perfect makeup",),
@@ -274,7 +267,7 @@ if __name__ == "__main__":
         ("elegant european woman portrait",),
         ("chinese beauty in silk dress",),
     ]
-    
+
     for (prompt,) in test_cases:
         print(f"\n{'='*60}")
         print(f"Prompt: {prompt[:50]}...")

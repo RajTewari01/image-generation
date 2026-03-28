@@ -21,7 +21,6 @@ from configs.paths import DIFFUSION_MODELS, IMAGE_GEN_OUTPUT_DIR
 from image_gen.pipeline.pipeline_types import PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
-
 # =============================================================================
 # MODEL CONFIGURATION
 # =============================================================================
@@ -79,7 +78,7 @@ def _detect_scene_type(prompt: str) -> str:
     Detect specific space scene type for enhanced prompting.
     """
     prompt_lower = prompt.lower()
-    
+
     scene_keywords = {
         "nebula": ["nebula", "cloud", "gas", "dust", "colorful", "orion", "crab", "pillars"],
         "galaxy": ["galaxy", "milky way", "andromeda", "spiral", "elliptical", "stars"],
@@ -91,15 +90,15 @@ def _detect_scene_type(prompt: str) -> str:
         "alien": ["alien", "extraterrestrial", "otherworldly", "strange", "exotic"],
         "star": ["star", "sun", "solar", "corona", "flare", "supernova", "explosion"],
     }
-    
+
     # Score each scene type
     scores = {scene: 0 for scene in scene_keywords}
-    
+
     for scene, keywords in scene_keywords.items():
         for kw in keywords:
             if kw in prompt_lower:
                 scores[scene] += 1
-    
+
     # Return best match or "general"
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else "general"
@@ -111,7 +110,7 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
     Defaults to wide for space scenes.
     """
     prompt_lower = prompt.lower()
-    
+
     # Explicit aspect mentions
     if re.search(r'\b(ultrawide|anamorphic|2\.4:1|cinematic)\b', prompt_lower):
         return ("ultrawide", *ASPECT_RATIOS["ultrawide"])
@@ -123,7 +122,7 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
         return ("square", *ASPECT_RATIOS["square"])
     if re.search(r'\b(portrait|vertical|phone|9:16)\b', prompt_lower):
         return ("portrait", *ASPECT_RATIOS["portrait"])
-    
+
     # Default to wide for space (most epic look)
     return ("wide", *ASPECT_RATIOS["wide"])
 
@@ -166,22 +165,22 @@ def get_space_config(
 ) -> PipelineConfigs:
     """
     Get Space/Sci-Fi pipeline configuration.
-    
+
     Args:
         prompt: Your space scene description
         aspect: "landscape", "wide", "ultrawide", "square", or "portrait"
         width: Override width
         height: Override height
         enhance_scene: Add scene-specific enhancements to prompt
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Detect scene type
     scene_type = _detect_scene_type(prompt)
     print(f"🚀 Space Mode: {scene_type.upper()} scene")
-    
+
     # Aspect ratio / dimensions
     if width is None or height is None:
         if aspect is not None:
@@ -190,28 +189,28 @@ def get_space_config(
         else:
             detected_aspect, width, height = _detect_aspect(prompt)
             print(f"📐 Auto-detected: {detected_aspect} ({width}x{height})")
-    
+
     # Build enhanced prompt
     enhancement = SCENE_ENHANCEMENTS.get(scene_type, "") if enhance_scene else ""
-    
+
     final_prompt = SPACE_TEMPLATE.format(
         prompt=f"{enhancement}{prompt}"
     )
-    
+
     # Output directory
     output_dir = IMAGE_GEN_OUTPUT_DIR / "space" / scene_type
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     return PipelineConfigs(
         base_model=SPACE_MODEL,
         output_dir=output_dir,
         prompt=final_prompt,
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-        
+
         scheduler_name=SPACE_SETTINGS["scheduler"],
-        
+
         neg_prompt=SPACE_NEGATIVE,
-        
+
         width=width,
         height=height,
         steps=SPACE_SETTINGS["steps"],
@@ -259,7 +258,7 @@ def space_panorama(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing space pipeline detection...\n")
-    
+
     test_prompts = [
         "colorful nebula with stars and cosmic dust",
         "massive spiral galaxy with billions of stars",
@@ -269,7 +268,7 @@ if __name__ == "__main__":
         "black hole with accretion disk, warped starlight",
         "epic ultrawide cinematic space battle",
     ]
-    
+
     for prompt in test_prompts:
         print(f"\n📝 Prompt: {prompt[:50]}...")
         config = get_space_config(prompt)

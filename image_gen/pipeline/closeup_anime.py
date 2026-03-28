@@ -16,21 +16,19 @@ Usage:
     config = closeup_anime("a beautiful magical girl with glowing eyes")
 """
 
-from pathlib import Path
-from typing import Optional, Literal, List
 import sys
+from pathlib import Path
+from typing import List, Literal, Optional
 
 # Add project root to path
-
 from configs.paths import (
+    DIFFUSION_MODELS,  # Changed from MODEL_CLOSEUP_ANIME
+    EMBEDDING_FASTNEGATIVE,
     IMAGE_GEN_OUTPUT_DIR,
     LORA_MODELS,
-    DIFFUSION_MODELS,  # Changed from MODEL_CLOSEUP_ANIME
     VAE_DIR,
-    EMBEDDING_FASTNEGATIVE
 )
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -60,7 +58,7 @@ COMMON_NEGATIVE = (
 
 @register_pipeline(
     name="closeup_anime",
-    keywords=["closeup anime", "anime portrait", "anime face", "anime close-up", 
+    keywords=["closeup anime", "anime portrait", "anime face", "anime close-up",
               "magical girl", "violet evergarden", "anime headshot"],
     description="High-quality anime closeup portraits with Violet Evergarden LoRA",
     types={}
@@ -74,18 +72,18 @@ def get_config(
 ) -> PipelineConfigs:
     """
     Get Closeup Anime pipeline configuration.
-    
+
     Args:
         prompt: User's image description
         use_style_lora: Whether to apply the Violet Evergarden LoRA (recommended)
         width: Image width
         height: Image height
         use_template: Whether to wrap prompt in closeup template
-        
+
     Returns:
         PipelineConfigs object
     """
-    
+
     # 1. Prepare Prompt
     if use_template:
         final_prompt = CLOSEUP_TEMPLATE.format(prompt=prompt)
@@ -108,18 +106,18 @@ def get_config(
         prompt=final_prompt,
         neg_prompt=COMMON_NEGATIVE,
         style_type="anime",  # Auto-selects R-ESRGAN 4x+ Anime6B
-        
+
         # Use default baked-in VAE (external VAE downloads failing)
         vae="default",
         embeddings=[EMBEDDING_FASTNEGATIVE],
-        
+
         scheduler_name="dpm++_2m_karras",
         width=width,
         height=height,
         steps=25,
         cfg=7.0,
         clip_skip=2,  # Standard for most anime models
-        
+
         lora=loras,
         c_net=[],
     )
@@ -142,7 +140,7 @@ if __name__ == "__main__":
     test_prompts = [
         "girl with silver hair looking at viewer, blue eyes",
     ]
-    
+
     for p in test_prompts:
         print(f"\n{'='*60}")
         print(f"Prompt: {p}")

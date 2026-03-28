@@ -25,11 +25,12 @@ Note: This upscaler REQUIRES an active Stable Diffusion pipeline.
 It cannot work standalone like Real-ESRGAN upscalers.
 """
 
+from typing import TYPE_CHECKING, Optional
+
 import torch
-from PIL import Image
-from typing import Optional, TYPE_CHECKING
 from diffusers import AutoPipelineForImage2Image
 from diffusers.utils.logging import set_verbosity_error
+from PIL import Image
 
 if TYPE_CHECKING:
     from diffusers import StableDiffusionPipeline
@@ -48,7 +49,7 @@ def upscale(
 ) -> Image.Image:
     """
     Upscale an image using Img2Img diffusion.
-    
+
     Args:
         base_pipe: The loaded StableDiffusionPipeline (reused to save VRAM)
         image: The low-res generated image
@@ -58,31 +59,31 @@ def upscale(
         strength: 0.35 = preserve original, 0.70 = major changes
         guidance_scale: CFG scale (default 6.5)
         num_inference_steps: Steps for upscale pass (20 is usually enough)
-    
+
     Returns:
         Upscaled PIL Image
     """
     print(f"[Upscale] Diffusion: {scale_factor}x (strength={strength})")
-    
+
     # 1. Prepare Target Resolution
     target_width = int(image.size[0] * scale_factor)
     target_height = int(image.size[1] * scale_factor)
-    
+
     # Ensure dimensions are multiples of 8
     target_width = (target_width // 8) * 8
     target_height = (target_height // 8) * 8
-    
+
     # Pre-resize gives the AI a "sketch" to work on
     input_image = image.resize((target_width, target_height), Image.Resampling.LANCZOS)
-    
+
     # 2. Convert text-to-image pipe to img2img (no extra VRAM!)
     # Note: this usually shares components, preventing duplicate VRAM usage
     img2img = AutoPipelineForImage2Image.from_pipe(base_pipe)
-    
+
     # 3. Enable Tiling (CRITICAL for 6GB VRAM)
     if hasattr(img2img, "enable_vae_tiling"):
         img2img.enable_vae_tiling()
-    
+
     try:
         # 4. Generate
         upscaled = img2img(
@@ -94,10 +95,10 @@ def upscale(
             num_inference_steps=num_inference_steps,
             output_type="pil"
         ).images[0]
-        
+
         print(f"[DONE] Diffusion upscale complete: {upscaled.size}")
         return upscaled
-        
+
     except torch.cuda.OutOfMemoryError:
         print("[!] GPU Out Of Memory! Returning Lanczos fallback...")
         torch.cuda.empty_cache()
@@ -115,7 +116,7 @@ def upscale_with_fallback(
 ) -> Image.Image:
     """
     Upscale with automatic fallback to CPU Lanczos on OOM.
-    
+
     Same args as upscale(), plus:
         **kwargs: Additional arguments passed to upscale()
     """
@@ -131,7 +132,7 @@ def upscale_with_fallback(
     except Exception as e:
         print(f"[!] Diffusion upscale failed: {e}")
         print("   Falling back to Lanczos...")
-        
+
         target_width = int(image.size[0] * scale_factor)
         target_height = int(image.size[1] * scale_factor)
         return image.resize((target_width, target_height), Image.Resampling.LANCZOS)

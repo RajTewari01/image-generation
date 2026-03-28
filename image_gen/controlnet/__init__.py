@@ -11,10 +11,10 @@ Available ControlNets:
 
 Usage:
     from controlnet import canny
-    
+
     # Preprocess an image
     canny_map = canny.detect(image)
-    
+
     # Load the ControlNet model
     controlnet_model = canny.load_model()
 
@@ -22,6 +22,5 @@ All model paths are configured in: configs/paths.py
 """
 
 from pathlib import Path
-
 
 from configs.paths import CONTROLNET_MODELS, get_controlnet_path

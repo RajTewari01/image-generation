@@ -17,19 +17,13 @@ Usage:
     config = get_car_config("midnight blue sports car", style="rx7")
 """
 
-from pathlib import Path
-from typing import Optional, Literal
 import sys
+from pathlib import Path
+from typing import Literal, Optional
 
 # Add project root to path
-
-from configs.paths import (
-    IMAGE_GEN_OUTPUT_DIR,
-    LORA_MODELS,
-    MODEL_REALISTIC_VISION
-)
-
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from configs.paths import IMAGE_GEN_OUTPUT_DIR, LORA_MODELS, MODEL_REALISTIC_VISION
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
 
 # Output Path
@@ -56,7 +50,7 @@ CAR_STYLE_MAP = {
 }
 
 CarStyle = Literal[
-    "sketch", "sedan", "retro", "speedtail", "f1", "mx5", 
+    "sketch", "sedan", "retro", "speedtail", "f1", "mx5",
     "autohome", "amsdr", "rx7", "jetcar", "motorbike"
 ]
 
@@ -94,7 +88,7 @@ def _detect_car_style(prompt: str) -> CarStyle:
     """Detect car style from prompt keywords using scoring system."""
     import re
     prompt_lower = prompt.lower()
-    
+
     # Style keywords with weights - based on CivitAI prompt analysis
     style_keywords = {
         "sketch": {"sketch": 3, "drawing": 2, "pencil": 2, "line art": 2, "lineart": 2, "illustration": 1},
@@ -132,28 +126,28 @@ def _detect_car_style(prompt: str) -> CarStyle:
             "yamaha": 2, "honda": 1, "harley": 2, "superbike": 2, "rider": 1
         },
     }
-    
+
     # Calculate scores
     scores = {style: 0 for style in style_keywords}
-    
+
     for style, keywords in style_keywords.items():
         for keyword, weight in keywords.items():
             if re.search(rf'\b{keyword}\b', prompt_lower):
                 scores[style] += weight
-    
+
     # Get best style
     best_style = max(scores, key=scores.get)
-    
+
     # Default to amsdr if no keywords matched (general purpose)
     if scores[best_style] == 0:
         return "amsdr"
-    
+
     return best_style
 
 
 @register_pipeline(
     name="car",
-    keywords=["car", "vehicle", "automobile", "sedan", "rx7", "rx-7", "mx5", "miata", "f1", 
+    keywords=["car", "vehicle", "automobile", "sedan", "rx7", "rx-7", "mx5", "miata", "f1",
               "speedtail", "retro", "vintage", "classic car", "taxi", "train", "motorbike"],
     description="Car generation with LoRA styles for various vehicle types",
     types={
@@ -179,24 +173,24 @@ def get_car_config(
 ) -> PipelineConfigs:
     """
     Get Car pipeline configuration using proven settings.
-    
+
     Args:
         prompt: Your description (e.g., "midnight blue sports car on mountain road")
         style: Car LoRA style to use (auto-detected if None)
         width: Image width (default 768)
         height: Image height (default 512)
         auto_detect: If True, detect style from prompt keywords
-    
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Auto-detect style if not specified
     if auto_detect and style is None:
         style = _detect_car_style(prompt)
     elif style is None:
         style = "amsdr"
-    
+
     style_info = CAR_STYLE_MAP.get(style)
     if not style_info:
         print(f"[Cars] Warning: Invalid style '{style}', defaulting to 'amsdr'")
@@ -204,7 +198,7 @@ def get_car_config(
         style = "amsdr"
 
     trigger = style_info["trigger"]
-    
+
     # Build prompt in proven format: "{trigger}, {prompt}, clean, smooth..."
     if style == "jetcar":
         # Train uses different template
@@ -221,7 +215,7 @@ def get_car_config(
         lora_path=lora_path,
         scale=style_info["strength"]
     )
-    
+
     print(f"[Cars] Mode: {style.upper()} | LoRA: {lora_path.name} | Trigger: '{trigger}'")
 
     return PipelineConfigs(
@@ -246,14 +240,14 @@ def get_car_config(
 if __name__ == "__main__":
     # Quick verification
     print("Testing car pipeline configurations...")
-    
+
     test_cases = [
         ("amsdr", "classic yellow taxi, new york city, times square, busy street"),  # AMSDR = any country taxi
         ("rx7", "midnight blue sports car, mountain road, sunset"),
         ("jetcar", "train arriving at station, cherry blossoms"),
         ("retro", "vintage red convertible, coastal highway, golden hour"),
     ]
-    
+
     for style, prompt in test_cases:
         print(f"\n{'='*60}")
         config = get_car_config(prompt, style=style)

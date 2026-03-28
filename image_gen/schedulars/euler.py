@@ -18,13 +18,14 @@ Best For:
 
 Recommended Steps: 25-35
 
-Note: The "ancestral" variant adds noise at each step, making 
-outputs slightly different each time. Very forgiving scheduler 
+Note: The "ancestral" variant adds noise at each step, making
+outputs slightly different each time. Very forgiving scheduler
 that works well with most models and prompts.
 """
 
-from diffusers import EulerAncestralDiscreteScheduler
 from typing import Callable
+
+from diffusers import EulerAncestralDiscreteScheduler
 
 
 def load(pipe_config) -> Callable:

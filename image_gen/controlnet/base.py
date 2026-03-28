@@ -6,10 +6,11 @@ Shared utilities for all ControlNet models.
 Handles model loading and VRAM management.
 """
 
-import torch
 import gc
 from pathlib import Path
 from typing import Optional, Union
+
+import torch
 from diffusers import ControlNetModel
 
 
@@ -26,25 +27,25 @@ def load_controlnet(
 ) -> ControlNetModel:
     """
     Load a ControlNet model from a single file.
-    
+
     Args:
         model_path: Path to the .pth or .safetensors model file
         torch_dtype: Data type for model weights (float16 saves VRAM)
-    
+
     Returns:
         ControlNetModel instance
     """
     model_path = Path(model_path)
     if not model_path.exists():
         raise FileNotFoundError(f"ControlNet model not found: {model_path}")
-    
+
     print(f"[+] Loading ControlNet: {model_path.stem}")
-    
+
     controlnet = ControlNetModel.from_single_file(
         str(model_path),
         torch_dtype=torch_dtype
     )
-    
+
     print(f"   [+] Loaded: {model_path.name}")
     return controlnet
 

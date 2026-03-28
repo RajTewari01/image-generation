@@ -8,12 +8,13 @@ Usage:
     python api_scraper.py https://civitai.com/models/46294
 """
 
-import requests
 import json
-import re
 import os
+import re
 import sys
 from pathlib import Path
+
+import requests
 from dotenv import load_dotenv
 
 # Load .env file if present
@@ -28,34 +29,34 @@ if not API_KEY:
 
 class CivitAIClient:
     """CivitAI API client with authentication."""
-    
+
     BASE_URL = "https://civitai.com/api/v1"
-    
+
     def __init__(self, api_key: str):
         self.session = requests.Session()
         self.session.headers.update({
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json',
         })
-    
+
     def get_model(self, model_id: int) -> dict:
         """Get model info including images."""
         url = f"{self.BASE_URL}/models/{model_id}"
         response = self.session.get(url, timeout=120)
         response.raise_for_status()
         return response.json()
-    
+
     def get_images(self, model_id: int = None, limit: int = 50) -> list:
         """Get images for a model."""
         url = f"{self.BASE_URL}/images"
         params = {"limit": limit, "sort": "Most Reactions"}
         if model_id:
             params["modelId"] = model_id
-        
+
         response = self.session.get(url, params=params, timeout=120)
         response.raise_for_status()
         return response.json().get('items', [])
-    
+
     def get_image(self, image_id: int) -> dict:
         """Get single image details."""
         url = f"{self.BASE_URL}/images/{image_id}"
@@ -82,35 +83,35 @@ def extract_image_id(url: str) -> int:
 
 def scrape_model(client: CivitAIClient, model_id: int) -> list:
     """Scrape all prompts from a model."""
-    
+
     print(f"Fetching model {model_id}...")
-    
+
     # Get model info (includes some images)
     model = client.get_model(model_id)
     print(f"Model: {model.get('name')}")
-    
+
     # Get more images from gallery
     print("Fetching gallery images...")
     images = client.get_images(model_id, limit=100)
     print(f"Found {len(images)} images")
-    
+
     prompts = []
-    
+
     for img in images:
         meta = img.get('meta')
         if not meta:
             continue
-        
+
         # Handle dict-like meta
         if not isinstance(meta, dict):
             continue
-        
+
         # CivitAI API sometimes nests meta inside meta
         if 'meta' in meta and isinstance(meta.get('meta'), dict):
             meta = meta.get('meta', {})
-        
+
         prompt = meta.get('prompt')
-        
+
         if prompt:
             prompts.append({
                 'prompt': prompt,
@@ -122,10 +123,10 @@ def scrape_model(client: CivitAIClient, model_id: int) -> list:
                 'size': f"{img.get('width')}x{img.get('height')}",
                 'reactions': img.get('stats', {}).get('heartCount', 0),
             })
-    
+
     # Sort by reactions
     prompts.sort(key=lambda x: x.get('reactions', 0), reverse=True)
-    
+
     print(f"Extracted {len(prompts)} prompts with metadata")
     return prompts
 
@@ -134,9 +135,9 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python api_scraper.py <civitai_url> [civitai_url_2 ...]")
         sys.exit(1)
-    
+
     client = CivitAIClient(API_KEY)
-    
+
     for url in sys.argv[1:]:
         print(f"\nProcessing: {url}")
         if '/images/' in url:
@@ -162,29 +163,29 @@ def main():
             if model_id:
                 try:
                     prompts = scrape_model(client, model_id)
-                    
+
                     if prompts:
                         print("\n" + "="*60)
                         print("TOP 5 PROMPTS (by reactions)")
                         print("="*60)
-                        
+
                         for i, p in enumerate(prompts[:5], 1):
                             print(f"\n--- #{i} ({p.get('reactions', 0)} hearts) ---")
                             print(f"Prompt: {p['prompt'][:150]}...")
                             print(f"Negative: {p['negative_prompt'][:80]}...")
                             print(f"Settings: {p['steps']} steps, CFG {p['cfg_scale']}, {p['sampler']}")
-                        
+
                         # Save all
                         output = Path(__file__).parent.parent / "assets" / "prompts" / f"model_{model_id}_prompts.json"
                         output.parent.mkdir(parents=True, exist_ok=True)
-                        
+
                         with open(output, 'w', encoding='utf-8') as f:
                             json.dump({
                                 'model_id': model_id,
                                 'prompt_count': len(prompts),
                                 'prompts': prompts,
                             }, f, indent=2, ensure_ascii=False)
-                        
+
                         print(f"\n✓ Saved {len(prompts)} prompts to: {output}")
                     else:
                         print(f"No prompts found for model {model_id}")

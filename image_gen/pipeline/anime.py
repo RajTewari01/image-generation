@@ -18,17 +18,15 @@ Auto-detection features:
 - Optimized settings per model
 """
 
-import re
 import random
+import re
+import sys
 from pathlib import Path
 from typing import Literal, Optional
-import sys
 
-
-from configs.paths import DIFFUSION_MODELS, VAE_MODELS, IMAGE_GEN_OUTPUT_DIR
-from image_gen.pipeline.pipeline_types import PipelineConfigs, LoraConfig
+from configs.paths import DIFFUSION_MODELS, IMAGE_GEN_OUTPUT_DIR, VAE_MODELS
+from image_gen.pipeline.pipeline_types import LoraConfig, PipelineConfigs
 from image_gen.pipeline.registry import register_pipeline
-
 
 # =============================================================================
 # MODEL CONFIGURATIONS
@@ -127,7 +125,7 @@ ANIME_NEGATIVE = (
 )
 # Model type
 ModelType = Literal[
-    "meinamix", "novaporn", "bloodorangemix", "abyssorangemix", 
+    "meinamix", "novaporn", "bloodorangemix", "abyssorangemix",
     "eerieorangemix", "eerieorangemix_nsfw", "azovya", "shiny_sissy"
 ]
 AspectType = Literal["portrait", "landscape", "square"]
@@ -141,35 +139,34 @@ def _detect_model(prompt: str) -> ModelType:
     """
     Detect best anime model based on prompt keywords.
     Uses scoring system for specialty models, random for general anime.
-    
+
     Logic:
     - If prompt matches shiny_sissy keywords -> use shiny_sissy (specialty)
     - If prompt matches other keywords -> use best keyword match
     - If no keywords match -> RANDOM from general anime models (excludes shiny_sissy)
     """
     prompt_lower = prompt.lower()
-    
+
     # General anime models (for random selection when no keywords match)
     # NOTE: novaporn and shiny_sissy excluded - only via explicit keywords
     GENERAL_ANIME_MODELS = [
         "meinamix", "bloodorangemix", "abyssorangemix",
         "eerieorangemix", "eerieorangemix_nsfw", "azovya"
     ]
-    
+
     # Specialty models that should ONLY be selected via keywords (not random)
-    SPECIALTY_MODELS = ["shiny_sissy"]
-    
+
     # Model keywords with weights
     model_keywords = {
         "meinamix": {
-            "meina": 5, "cute": 2, "kawaii": 2, "moe": 2, 
+            "meina": 5, "cute": 2, "kawaii": 2, "moe": 2,
             "school": 1, "uniform": 1, "idol": 2, "magical girl": 2
         },
         "novaporn": {
             "detailed": 1, "porn": 5, "semi realistic": 2, "naked": 5, "pussy": 5,
         },
         "bloodorangemix": {
-            "blood": 3, 
+            "blood": 3,
         },
         "abyssorangemix": {
             "abyss": 5,
@@ -188,22 +185,22 @@ def _detect_model(prompt: str) -> ModelType:
             "rubber": 3, "glossy": 2, "doll": 2, "femboy": 5
         },
     }
-    
+
     # Calculate scores
     scores = {model: 0 for model in model_keywords}
-    
+
     for model, keywords in model_keywords.items():
         for keyword, weight in keywords.items():
             if re.search(rf'\b{re.escape(keyword)}\b', prompt_lower):
                 scores[model] += weight
-    
+
     # Get best model by score
     best_model = max(scores, key=scores.get)
-    
+
     # If best model has a score > 0, use it (keyword match found)
     if scores[best_model] > 0:
         return best_model
-    
+
     # No keywords matched -> pick RANDOM from general anime models
     chosen = random.choice(GENERAL_ANIME_MODELS)
     print(f"🎲 No keyword match, randomly selected: {chosen}")
@@ -216,24 +213,24 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
     Returns: (aspect_name, width, height)
     """
     prompt_lower = prompt.lower()
-    
+
     # Portrait keywords (taller than wide)
     portrait_keywords = [
         "portrait", "full body", "fullbody", "standing", "tall",
         "vertical", "phone wallpaper", "1girl", "1boy", "solo"
     ]
-    
+
     # Landscape keywords (wider than tall)
     landscape_keywords = [
         "landscape", "wide", "panorama", "scenery", "background",
         "environment", "horizontal", "desktop wallpaper", "scene"
     ]
-    
+
     # Square keywords
     square_keywords = [
         "square", "profile", "icon", "avatar", "headshot", "face"
     ]
-    
+
     # Check for explicit aspect ratio mentions
     # 4GB VRAM safe sizes (max 768 on any side)
     if re.search(r'\b(16:9|widescreen|cinema)\b', prompt_lower):
@@ -242,12 +239,12 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
         return ("portrait", 432, 768)
     if re.search(r'\b(1:1|square)\b', prompt_lower):
         return ("square", 512, 512)
-    
+
     # Score-based detection
     portrait_score = sum(1 for kw in portrait_keywords if kw in prompt_lower)
     landscape_score = sum(1 for kw in landscape_keywords if kw in prompt_lower)
     square_score = sum(1 for kw in square_keywords if kw in prompt_lower)
-    
+
     if landscape_score > portrait_score and landscape_score > square_score:
         return ("landscape", 768, 512)
     elif square_score > portrait_score:
@@ -263,7 +260,7 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
 
 @register_pipeline(
     name="anime",
-    keywords=["anime", "kawaii", "moe", "meina", "novaporn", "bloodorangemix", "abyssorangemix", 
+    keywords=["anime", "kawaii", "moe", "meina", "novaporn", "bloodorangemix", "abyssorangemix",
               "eerie anime", "rpg", "fantasy", "azovya", "latex", "shiny sissy"],
     description="Multi-model anime generation with intelligent model selection",
     types={
@@ -287,7 +284,7 @@ def get_anime_config(
 ) -> PipelineConfigs:
     """
     Get Anime pipeline configuration.
-    
+
     Args:
         prompt: Your anime art description
         model: Specific model or None for auto-detect
@@ -296,11 +293,11 @@ def get_anime_config(
         height: Override height (auto-detected from aspect if None)
         auto_detect: Whether to auto-detect model from prompt
         random_model: If True, pick a random model
-        
+
     Returns:
         PipelineConfigs ready for engine.generate()
     """
-    
+
     # Model selection
     if random_model:
         model = random.choice(list(MODEL_MAP.keys()))
@@ -310,14 +307,14 @@ def get_anime_config(
         print(f"🔍 Auto-detected Model: {model}")
     elif model is None:
         model = "meinamix"  # Default
-    
+
     if model not in MODEL_MAP:
         print(f"⚠️ Unknown model '{model}', using meinamix")
         model = "meinamix"
-    
+
     selected = MODEL_MAP[model]
     print(f"🎨 Anime Mode: {model} - {selected['description']}")
-    
+
     # Aspect ratio / dimensions
     if width is None or height is None:
         if aspect is not None:
@@ -332,33 +329,33 @@ def get_anime_config(
             # Auto-detect aspect
             detected_aspect, width, height = _detect_aspect(prompt)
             print(f"📐 Detected Aspect: {detected_aspect} ({width}x{height})")
-    
+
     # Build trigger
     trigger = selected["trigger"]
     trigger_prefix = f"({trigger}:1.2), " if trigger else ""
-    
+
     # Build final prompt
     final_prompt = ANIME_TEMPLATE.format(
         trigger=trigger_prefix,
         prompt=prompt
     )
-    
+
     # Output directory
     output_dir = IMAGE_GEN_OUTPUT_DIR / "anime" / model
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     return PipelineConfigs(
         base_model=selected["file"],
         output_dir=output_dir,
         prompt=final_prompt,
         vae=selected.get("vae"),
         style_type="anime",  # Auto-selects R-ESRGAN 4x+ Anime6B
-        
+
         scheduler_name="dpm++_2m_karras",  # Best for anime
-        
+
         triggers=trigger if trigger else None,
         neg_prompt=ANIME_NEGATIVE,
-        
+
         width=width,
         height=height,
         steps=selected["steps"],
@@ -412,7 +409,7 @@ def anime_random(prompt: str, **kwargs) -> PipelineConfigs:
 
 if __name__ == "__main__":
     print("Testing anime pipeline detection...\n")
-    
+
     test_prompts = [
         "cute kawaii girl in school uniform, Meina style",
         "dark horror ghost girl in haunted mansion, eerie",
@@ -422,7 +419,7 @@ if __name__ == "__main__":
         "1girl standing full body portrait",
         "vivid colorful magical girl transformation",
     ]
-    
+
     for prompt in test_prompts:
         print(f"\n📝 Prompt: {prompt[:50]}...")
         config = get_anime_config(prompt)
