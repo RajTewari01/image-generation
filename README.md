@@ -11,6 +11,19 @@
 
 *A modular, plugin-based Stable Diffusion inference framework **designed for learning and real-world deployment**. Built with aggressive layer offloading to run production workloads locally on a GTX 1650 (4 GB VRAM).*
 
+## ⚡ What is this?
+
+- Run Stable Diffusion on 4GB GPUs (GTX 1650) without OOM crashes
+- Plugin-based pipeline system (no messy if/else routing blocks)
+- Fully supports community LoRAs, ControlNets, and Upscalers
+- Built headless: wrap it instantly in Web, Desktop, or Mobile UIs
+
+<p align="center">
+  <img src="proofs/gen_060cc7de.png" width="32%" />
+  <img src="proofs/gen_14ae14d4.png" width="32%" />
+  <img src="proofs/gen_31974f42.png" width="32%" />
+</p>
+
 ---
 
 [**Quick Start**](#-quick-start) · [**How & Why it Works**](#️-how--why-this-architecture-is-built-for-the-long-run) · [**Benchmarks**](#-performance-benchmarks) · [**Managing Pipelines**](#-managing-multiple-pipelines) · [**Building UIs**](#-connecting-to-user-interfaces)
@@ -217,8 +230,8 @@ cd image-gen
 # Install PyTorch with CUDA first (example for CUDA 12.1)
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
-# Install dependencies
-pip install -r requirements.txt
+# Install as an editable package with AI and Vision dependencies
+pip install -e .[ai,vision]
 ```
 
 ### 2. Setup Models and Paths
@@ -228,15 +241,17 @@ pip install -r requirements.txt
 
 ### 3. Generate
 
+Because this framework is installed as a pure Python package, you can run inference globally using the built-in CLI:
+
 ```bash
 # List all registered styles
-python -m image_gen.runner --list
+image-gen --list
 
-# Anime style
-python -m image_gen.runner "beautiful anime girl with sword" --style anime
+# Anime style (automatically injects enhancers and negative prompts)
+image-gen "beautiful anime girl with sword" --style anime
 
-# Car with specific sub-type LoRA
-python -m image_gen.runner "midnight blue RX7 on mountain road" --style car --type rx7
+# Automotive engineering with sub-type specific LoRA injection
+image-gen "midnight blue RX7 on mountain road" --style car --type rx7
 ```
 
 ---

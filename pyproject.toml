@@ -54,6 +54,13 @@ Documentation = "https://github.com/RajTewari01/image-gen/tree/main/docs"
 Repository = "https://github.com/RajTewari01/image-gen"
 Issues = "https://github.com/RajTewari01/image-gen/issues"
 
+[project.optional-dependencies]
+ai = ["torchvision>=0.15.0", "torchaudio>=2.0.0"]
+vision = ["matplotlib>=3.7.0", "rembg>=2.0.0"]
+
+[project.scripts]
+image-gen = "image_gen.runner:main"
+
 [tool.ruff]
 target-version = "py310"
 line-length = 120
