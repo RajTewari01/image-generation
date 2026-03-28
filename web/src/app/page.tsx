@@ -23,7 +23,7 @@ export default function Home() {
   const [appTheme, setAppTheme] = useState<ThemeName>('Monterey');
 
   // Dimensions
-  const [aspectRatio, setAspectRatio] = useState<'square'|'portrait'|'landscape'>('portrait');
+  const [aspectRatio, setAspectRatio] = useState<'square'|'portrait'|'landscape'>('square');
   const getDims = () => {
     switch(aspectRatio) {
       case 'square': return { w: 512, h: 512 };
@@ -52,7 +52,9 @@ export default function Home() {
         const types = Object.keys(data.pipelines[first].types || {});
         if (types.length > 0) setActiveType(types[0]);
       }
-    }).catch(console.error);
+    }).catch(e => {
+      console.warn("Backend not detected yet. Start the FastAPI server to populate the AI engines.", e);
+    });
     
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
@@ -113,7 +115,21 @@ export default function Home() {
       {/* 🌌 Dynamic WebGL Fluid Background */}
       <FluidBackground theme={appTheme} />
 
-      <div className="relative z-10 w-full h-full flex flex-col md:flex-row p-2 sm:p-4 gap-4 md:gap-6">
+      {/* Floating Theme Selector */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-3 bg-neutral-900/60 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
+        <Palette className="w-4 h-4 text-neutral-400" />
+        <select 
+          value={appTheme} 
+          onChange={e => setAppTheme(e.target.value as ThemeName)}
+          className="bg-transparent text-sm font-medium text-neutral-200 focus:outline-none cursor-pointer appearance-none pr-2"
+        >
+          {(Object.keys(THEMES) as Array<ThemeName>).map(theme => (
+            <option key={theme} value={theme} className="bg-neutral-900 py-1">{theme} Theme</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="relative z-10 w-full h-full flex flex-col md:flex-row p-2 sm:p-4 gap-4 md:gap-6 pt-[80px] md:pt-4">
         
         {/* ✨ SIDEBAR (Apple-like Glassmorphism) */}
         <motion.aside 
@@ -128,29 +144,12 @@ export default function Home() {
             </div>
             <div>
               <h1 className="font-semibold tracking-tight text-lg leading-tight">Image Gen Lite</h1>
-              <p className="text-xs font-medium text-neutral-400">FAANG Architecture v2.0</p>
+              <p className="text-xs font-medium text-neutral-400">Made by Biswadeep Tewari</p>
             </div>
           </div>
 
           <div className="space-y-4 flex-1">
-            {/* Theme Selection */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Palette className="w-3.5 h-3.5 text-neutral-400" />
-                <label className="text-xs font-medium text-neutral-400 uppercase tracking-wider">MacOS Theme</label>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(THEMES) as Array<ThemeName>).map(theme => (
-                  <button
-                    key={theme}
-                    onClick={() => setAppTheme(theme)}
-                    className={'py-1.5 text-xs font-medium rounded border transition-all ' + (appTheme === theme ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-200' : 'bg-black/20 border-white/5 text-neutral-400 hover:bg-black/40')}
-                  >
-                    {theme}
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             {/* Model Selection */}
             <div className="space-y-2">

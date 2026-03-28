@@ -82,20 +82,20 @@ const hexToVec3 = (hex: string) => {
 };
 
 export const THEMES = {
-  Monterey: { // Deep purples, default
+  Monterey: { // Classic Deep Purple/Indigo
     c1: '#0A0A0B', c2: '#4F46E5', c3: '#9333EA' 
   },
-  Sonoma: { // Warm Coral / Sunset
-    c1: '#1F111E', c2: '#E11D48', c3: '#F59E0B'
+  Sonoma: { // Bright Sunset Coral (Red/Orange/Yellow)
+    c1: '#7f1d1d', c2: '#ea580c', c3: '#fde047'
   },
-  Catalina: { // Deep Ocean
-    c1: '#091522', c2: '#0EA5E9', c3: '#0F766E'
+  Catalina: { // Deep Aqua Ocean (Dark Navy/Cyan)
+    c1: '#020617', c2: '#0284c7', c3: '#38bdf8'
   },
-  BigSur: { // Vibrant Apple Spring
-    c1: '#111827', c2: '#EC4899', c3: '#10B981'
+  BigSur: { // Vibrant Spring (Forest/Lime)
+    c1: '#14532d', c2: '#16a34a', c3: '#bef264'
   },
-  Sequoia: { // Dark Forest green
-    c1: '#061D19', c2: '#059669', c3: '#14B8A6'
+  Sequoia: { // Monochrome / Silver (Black/Grey/White)
+    c1: '#171717', c2: '#737373', c3: '#ffffff'
   }
 };
 
