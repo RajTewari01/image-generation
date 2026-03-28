@@ -18,11 +18,11 @@
 - Fully supports community LoRAs, ControlNets, and Upscalers
 - Built headless: wrap it instantly in Web, Desktop, or Mobile UIs
 
-<p align="center">
-  <img src="proofs/gen_060cc7de.png" width="32%" />
-  <img src="proofs/gen_14ae14d4.png" width="32%" />
-  <img src="proofs/gen_31974f42.png" width="32%" />
-</p>
+<div align="center">
+  <img src="./proofs/gen_060cc7de.png" width="32%">
+  <img src="./proofs/gen_14ae14d4.png" width="32%">
+  <img src="./proofs/gen_31974f42.png" width="32%">
+</div>
 
 ---
 
