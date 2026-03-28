@@ -24,9 +24,8 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install flake8 pytest
-          # Mock heavy packages for CI validation
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -e .
 
       - name: Syntax & Lint Checks
         run: |
