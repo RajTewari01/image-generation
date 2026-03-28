@@ -86,6 +86,10 @@ DIFFUSION_MODELS = {
     "papercut": CHECKPOINTS_DIR / "papercut.safetensors",
     "horror": CHECKPOINTS_DIR / "horror_v1.safetensors",
     "walking_dead": CHECKPOINTS_DIR / "walking_dead.safetensors",
+    "neverending_dream": CHECKPOINTS_DIR / "neverending_dream.safetensors",
+    "deep_space": CHECKPOINTS_DIR / "deep_space.safetensors",
+    "realistic_digital": CHECKPOINTS_DIR / "realistic_digital.safetensors",
+    "typhoon": CHECKPOINTS_DIR / "typhoon.safetensors",
 }
 
 # Convenience aliases
@@ -133,6 +137,9 @@ LORA_MODELS = {
     # DifConsistency LoRAs
     "dif_consistency_photo": LORA_DIR / "dif_consistency_photo.safetensors",
     "dif_consistency_detail": LORA_DIR / "dif_consistency_detail.safetensors",
+    # Specialty LoRAs
+    "chinese_zombie": LORA_DIR / "chinese_zombie.safetensors",
+    "polaroid": LORA_DIR / "polaroid.safetensors",
     # Add your own
     # "my_lora": LORA_DIR / "my_lora.safetensors",
 }
