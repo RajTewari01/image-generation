@@ -19,10 +19,11 @@
 - Built headless: wrap it instantly in Web, Desktop, or Mobile UIs
 
 <div align="center">
-  <img src="./proofs/gen_060cc7de.png" width="24%">
-  <img src="./proofs/gen_e7ba952e.png" width="24%">
-  <img src="./proofs/gen_31974f42.png" width="24%">
-  <img src="./proofs/gen_50beb40d.png" width="24%">
+  <img src="./proofs/gen_060cc7de.png" width="32%">
+  <img src="./proofs/gen_3d5e99a4.png" width="32%">
+  <img src="./proofs/gen_31974f42.png" width="32%">
+  <br>
+  <img src="./proofs/gen_09541cfa.png" width="97%">
 </div>
 
 ---
