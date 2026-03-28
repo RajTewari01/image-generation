@@ -2,14 +2,14 @@
 
 # 🎨 Image Gen Lite Framework
 
-### An Educational Stable Diffusion Engine for Low-VRAM GPUs by [RajTewari01](https://github.com/RajTewari01)
+### An Educational & Production-Inspired Stable Diffusion Engine
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
 [![Diffusers](https://img.shields.io/badge/🤗_Diffusers-0.25%2B-FFD21E?style=for-the-badge)](https://huggingface.co/docs/diffusers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
 
-*A modular, plugin-based Stable Diffusion 1.5 inference framework designed to teach developers how to architect and manage multiple AI pipelines. Built with aggressive VRAM optimizations to run locally on a GTX 1650 (4 GB).*
+*A modular, plugin-based Stable Diffusion inference framework **designed for learning and real-world deployment**. Built with aggressive layer offloading to run production workloads locally on a GTX 1650 (4 GB VRAM).*
 
 ---
 
@@ -24,9 +24,13 @@
 > [!NOTE]
 > **TL;DR:** This is a minimalist, plugin-based Stable Diffusion 1.5 framework specifically optimized for 4GB GPUs (like the GTX 1650). It teaches you how to cleanly manage 10+ different AI art styles using a **Registry Pattern**, how to aggressively optimize VRAM using **layer offloading and subprocess isolation**, and how to attach web, desktop, or mobile UIs to a headless Python backend.
 
-This project is a **lite framework** designed for educational purposes. 
-
 If you've ever wondered how to transition from messy Jupyter notebooks with hardcoded Stable Diffusion scripts into a **production-grade architecture** that can handle dozens of different art styles, models, and upscalers cleanly—this repository is your blueprint.
+
+### 💡 Real-World Use Cases
+- **Midjourney-Style Apps**: Wrap the engine in FastAPI to power your own Discord bots or web dashboards.
+- **SaaS AI Tools**: Use the headless engine as a scalable backend generation API.
+- **Low-Cost Local Hosting**: Run full inference pipelines on cheap, low-end hardware without OOM crashing.
+- **Rapid Prototyping**: Experiment with LoRAs, ControlNets, and Schedulers via the decoupled Registry Pattern.
 
 It demonstrates:
 1. **The Registry Pattern**: How to manage multiple pipelines without massive `if/else` blocks.
@@ -40,6 +44,30 @@ It demonstrates:
 Most open-source Stable Diffusion scripts start simple but quickly evolve into fragile monolithic scripts packed with `if/else` statements for every new model, autoencoder, or upscaler. 
 
 **This framework takes a different approach.** It applies enterprise software engineering principles to AI inference, ensuring the codebase remains clean no matter how many pipelines, LoRAs, or SDKs you add.
+
+### 📊 System Architecture
+
+```mermaid
+graph LR
+    U[User/App] -->|Prompt, Style| W[Web API / CLI]
+    W -->|Dispatch| R((Registry))
+    
+    subgraph Core Engine
+        R -->|Load Pipeline| C[PipelineConfigs]
+        C -->|Config Object| E[Diffusion Engine]
+    end
+    
+    E -->|Lazy Load| SD[SD 1.5 Model]
+    E -.->|Dynamic Swap| CN[ControlNet]
+    
+    SD -->|512x768| ES[Real-ESRGAN]
+    ES -->|2k/4k| O[Final Output Image]
+    
+    style E fill:#f9f,stroke:#333,stroke-width:2px
+    style R fill:#bbf,stroke:#333
+```
+
+### Strategic Advantages
 
 1. **The Registry Pattern (Zero-Friction Scaling):** Adding a new style to the engine requires zero modifications to the core inference logic. You simply drop a new file into `image_gen/pipeline/`, decorate it with `@register_pipeline`, and the engine handles the rest. This completely decouples "What to generate" from "How to execute it."
 2. **Lazy-Loading & Dynamic Imports:** Loading 6 different schedulers, 4 upscalers, and 3 ControlNets at Python startup consumes over 1GB of system RAM before you even generate an image. This engine uses `importlib` to dynamically load modules *only at the moment they are requested by the generation config*, keeping the baseline footprint near zero.
