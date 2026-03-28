@@ -64,8 +64,9 @@ Most open-source Stable Diffusion scripts start simple but quickly evolve into f
 
 ```mermaid
 graph LR
-    U[User/App] -->|Prompt, Style| W[Web API / CLI]
-    W -->|Dispatch| R((Registry))
+    U[Next.js Client] -->|React Three Fiber| F[Framer Motion UI]
+    F -->|REST Async Polling| W[FastAPI Gateway]
+    W -->|Subprocess Dispatch| R((Registry))
     
     subgraph Core Engine
         R -->|Load Pipeline| C[PipelineConfigs]
@@ -79,15 +80,17 @@ graph LR
     ES -->|2k/4k| O[Final Output Image]
     
     style E fill:#f9f,stroke:#333,stroke-width:2px
-    style R fill:#bbf,stroke:#333
+    style W fill:#bbf,stroke:#333
+    style U fill:#d4edda,stroke:#333
 ```
 
 ### Strategic Advantages
 
-1. **The Registry Pattern (Zero-Friction Scaling):** Adding a new style to the engine requires zero modifications to the core inference logic. You simply drop a new file into `image_gen/pipeline/`, decorate it with `@register_pipeline`, and the engine handles the rest. This completely decouples "What to generate" from "How to execute it."
-2. **Lazy-Loading & Dynamic Imports:** Loading 6 different schedulers, 4 upscalers, and 3 ControlNets at Python startup consumes over 1GB of system RAM before you even generate an image. This engine uses `importlib` to dynamically load modules *only at the moment they are requested by the generation config*, keeping the baseline footprint near zero.
-3. **Subprocess Isolation Guarantee:** PyTorch's CUDA memory allocator is notorious for holding onto VRAM even after `torch.cuda.empty_cache()` is called. This framework guarantees **100% VRAM release** by architecting the engine to be run inside isolated requests where context cleanup forces absolute memory deallocation back to the OS.
-4. **Headless by Design (Bring Your Own UI):** Whether you are building a React Web Dashboard, a PyQt local tool, or a Flutter mobile client, the backend architecture never changes. The engine expects a typed `PipelineConfigs` dataclass and returns a file path—making it trivial to wrap in FastAPI, Flask, or gRPC.
+1. **Ultra-Premium UI (Apple-Tier Aesthetics):** Included is a Next.js 14 (App Router) client featuring a dynamic WebGL GPU shader background (`@react-three/fiber`) that smoothly interpolates between 5 custom MacOS themes (Sonoma, Monterey, Catalina, Big Sur, Sequoia).
+2. **Physics-Based UI Morphs:** The frontend uses `framer-motion` to execute layout animations and physics-based transitions when transitioning from "Awaiting Parameters" to "Generating Tensor Graph" without any jarring loading screens.
+3. **The Registry Pattern (Zero-Friction Scaling):** Adding a new style to the engine requires zero modifications to the core inference logic. You simply drop a new file into `image_gen/pipeline/`, decorate it with `@register_pipeline`, and the engine handles the rest.
+4. **FastAPI Subprocess Isolation:** PyTorch's CUDA memory allocator is notorious for holding onto VRAM even after `torch.cuda.empty_cache()` is called. This framework sets up a FastAPI microservice that spins up isolated Python subprocesses, guaranteeing **100% VRAM release** back to the OS between generations.
+5. **Headless by Design:** Because the system is strictly decoupled, the AI engine can be queried via the FastAPI server asynchronously, meaning the Node.js/Next.js thread is never blocked during inference.
 
 ---
 
