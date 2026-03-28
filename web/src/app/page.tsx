@@ -132,7 +132,7 @@ export default function Home() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-semibold tracking-tight text-lg leading-tight">Image Gen Lite</h1>
+              <h1 className="font-semibold tracking-tight text-lg leading-tight">Image-Gen App</h1>
               <p className="text-xs font-medium text-neutral-400">Made by Biswadeep Tewari</p>
             </div>
           </div>

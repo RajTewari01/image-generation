@@ -17,7 +17,7 @@ uniform float uTime;
 uniform vec3 uColor1;
 uniform vec3 uColor2;
 uniform vec3 uColor3;
-uniform int uTheme; // 0: Monterey, 1: Sonoma, 2: Catalina, 3: BigSur, 4: Sequoia
+uniform float uTheme; // 0.0: Monterey, 1.0: Sonoma, 2.0: Catalina, 3.0: BigSur, 4.0: Sequoia
 varying vec2 vUv;
 
 // === Classic 3D Perlin Noise ===
@@ -70,34 +70,34 @@ void main() {
   vec2 uv = vUv;
   vec3 finalColor = uColor1;
 
-  if (uTheme == 0) {
+  if (uTheme < 0.5) {
     // 🌌 Monterey: Deep Perlin Liquid
     float noise1 = cnoise(vec3(uv * 1.5, uTime * 0.15));
     float noise2 = cnoise(vec3(uv * 2.0 - noise1, uTime * 0.1));
     vec3 color = mix(uColor1, uColor2, noise1 + 0.5);
     finalColor = mix(color, uColor3, noise2 + 0.3);
   } 
-  else if (uTheme == 1) {
+  else if (uTheme < 1.5) {
     // ☀️ Sonoma: Pulsing Sunset Orb
     vec2 pos = uv - vec2(0.5);
     float dist = length(pos);
-    float pulse = sin(uTime * 1.5) * 0.05 + 0.4;
-    float glow = smoothstep(pulse + 0.3, pulse - 0.2, dist);
+    float pulse = sin(uTime * 3.0) * 0.05 + 0.3;
+    float glow = smoothstep(pulse + 0.1, pulse - 0.4, dist);
     vec3 bg = mix(uColor1, uColor2, uv.y);
     finalColor = mix(bg, uColor3, glow);
-    finalColor += uColor2 * (0.1 / (dist + 0.01)) * 0.5; // inner bright glow
+    finalColor += uColor2 * (0.05 / (dist + 0.01)); // intense ring
   }
-  else if (uTheme == 2) {
-    // 🌊 Catalina: Oceanic Sine Waves
-    float waveX = sin(uv.x * 10.0 + uTime * 1.0) * 0.1;
-    float waveY = sin(uv.y * 15.0 + uTime * 1.5 + waveX) * 0.1;
-    float ripple = cnoise(vec3(uv * 4.0 + vec2(waveX, waveY), uTime * 0.2));
-    finalColor = mix(uColor1, uColor2, ripple * 0.5 + 0.5);
-    finalColor = mix(finalColor, uColor3, (waveX + waveY) * 2.0);
+  else if (uTheme < 2.5) {
+    // 🌊 Catalina: Oceanic Sine Waves (Exaggerated)
+    float waveX = sin(uv.x * 20.0 + uTime * 2.0) * 0.2;
+    float waveY = sin(uv.y * 20.0 + uTime * 2.5 + waveX) * 0.2;
+    float ripple = cnoise(vec3(uv * 10.0 + vec2(waveX, waveY), uTime * 0.5));
+    finalColor = mix(uColor1, uColor2, ripple + 0.5);
+    finalColor = mix(finalColor, uColor3, waveX + waveY + 0.5);
   }
-  else if (uTheme == 3) {
-    // 🦠 BigSur: Cellular Blob Voronoi
-    vec2 p = uv * 3.0;
+  else if (uTheme < 3.5) {
+    // 🦠 BigSur: Cellular Blob Voronoi (Exaggerated)
+    vec2 p = uv * 6.0;
     vec2 i = floor(p);
     vec2 f = fract(p);
     float minDist = 1.0;
@@ -105,32 +105,31 @@ void main() {
       for(int x = -1; x <= 1; x++) {
         vec2 neighbor = vec2(float(x), float(y));
         vec2 pt = hash2(i + neighbor);
-        pt = 0.5 + 0.5 * sin(uTime + 6.2831 * pt);
+        pt = 0.5 + 0.5 * sin(uTime * 2.0 + 6.2831 * pt);
         minDist = min(minDist, length(neighbor + pt - f));
       }
     }
-    float blob = 1.0 - smoothstep(0.0, 0.5, minDist);
-    vec3 baseColor = mix(uColor1, uColor2, uv.x);
-    finalColor = mix(baseColor, uColor3, blob);
+    float blob = smoothstep(0.4, 0.5, minDist);
+    finalColor = mix(uColor3, uColor1, blob);
   }
-  else if (uTheme == 4) {
+  else {
     // 🧊 Sequoia: Matrix Wireframe Grid
-    vec2 gridUV = fract(uv * 20.0 + vec2(uTime * 0.1, uTime * 0.2));
-    float lineX = smoothstep(0.0, 0.05, gridUV.x) - smoothstep(0.95, 1.0, gridUV.x);
-    float lineY = smoothstep(0.0, 0.05, gridUV.y) - smoothstep(0.95, 1.0, gridUV.y);
+    vec2 gridUV = fract(uv * 30.0 + vec2(uTime * 0.2, uTime * 0.4));
+    float lineX = smoothstep(0.0, 0.1, gridUV.x) - smoothstep(0.9, 1.0, gridUV.x);
+    float lineY = smoothstep(0.0, 0.1, gridUV.y) - smoothstep(0.9, 1.0, gridUV.y);
     float grid = 1.0 - (lineX * lineY);
     
-    // Scanline distortion
-    float scanline = sin(uv.y * 50.0 - uTime * 5.0) * 0.05;
+    // Distorted pixelation effect
+    float scanline = sin(uv.y * 100.0 - uTime * 10.0) * 0.1;
     
     finalColor = mix(uColor1, uColor2, grid + scanline);
     float dist = distance(uv, vec2(0.5));
-    finalColor = mix(finalColor, uColor3, 1.0 - smoothstep(0.0, 0.8, dist)); // Center glow
+    finalColor = mix(finalColor, uColor3, step(0.4, dist)); // sharp mask
   }
 
-  // Vignette common to all
+  // Soft Vignette
   float dist = distance(uv, vec2(0.5));
-  finalColor *= smoothstep(1.0, 0.2, dist * 0.6);
+  finalColor *= smoothstep(1.0, 0.1, dist * 0.8);
 
   gl_FragColor = vec4(finalColor, 1.0);
 }
