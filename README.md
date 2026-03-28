@@ -292,75 +292,92 @@ This framework demonstrates exactly how to survive on a 4 GB GPU through aggress
 
 ---
 
-## 🖼️ Render Gallery (Local 4GB VRAM)
+## 🖼️ Render Gallery — Local 4 GB VRAM
 
-These images were generated entirely locally on the 4GB GTX 1650 using the exact pipelines and upscaling stack defined in this repository:
+Every image below was generated **locally on a single GTX 1650 (4 GB VRAM)**. No cloud APIs. No rented compute. Pure local inference.
 
-<details>
-<summary><b>Click to Expand Full Render Gallery (34 Proofs)</b></summary>
+<details open>
+<summary><b>📸 34 Generations Across 13 Pipelines</b></summary>
 
-<table align="center" width="100%">
-  <tr>
-    <td width="33%"><img src="proofs/gen_060cc7de.png" /></td>
-    <td width="33%"><img src="proofs/gen_09541cfa.png" /></td>
-    <td width="33%"><img src="proofs/gen_14ae14d4.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_1ea8b73d.png" /></td>
-    <td><img src="proofs/gen_31974f42.png" /></td>
-    <td><img src="proofs/gen_3b0d9925.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_3d5e99a4.png" /></td>
-    <td><img src="proofs/gen_408e8c19.png" /></td>
-    <td><img src="proofs/gen_47a33d08.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_49a3e89b.png" /></td>
-    <td><img src="proofs/gen_4cef189d.png" /></td>
-    <td><img src="proofs/gen_50beb40d.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_5cffa386.png" /></td>
-    <td><img src="proofs/gen_5d8aeb4c.png" /></td>
-    <td><img src="proofs/gen_623fc306.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_75f7c2cc.png" /></td>
-    <td><img src="proofs/gen_76854796.png" /></td>
-    <td><img src="proofs/gen_76f61994.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_7a1d2228.png" /></td>
-    <td><img src="proofs/gen_7ecbeb47.png" /></td>
-    <td><img src="proofs/gen_94a65d7c.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_997e0985.png" /></td>
-    <td><img src="proofs/gen_ac67204f.png" /></td>
-    <td><img src="proofs/gen_c161c469.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_c5092bdc.png" /></td>
-    <td><img src="proofs/gen_d107e533.png" /></td>
-    <td><img src="proofs/gen_d2934a22.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_da8c363c.png" /></td>
-    <td><img src="proofs/gen_db4bdd02.png" /></td>
-    <td><img src="proofs/gen_dc23b04c.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_dd645e00.png" /></td>
-    <td><img src="proofs/gen_e1f16666.png" /></td>
-    <td><img src="proofs/gen_e7ba952e.png" /></td>
-  </tr>
-  <tr>
-    <td><img src="proofs/gen_ecad301d.png" /></td>
-    <td></td>
-    <td></td>
-  </tr>
-</table>
+<br>
+
+<div align="center">
+
+#### 🎌 Anime & Character Art
+*Pipelines: `anime` · `closeup_anime` · `ghost`*
+
+<img src="./proofs/gen_3d5e99a4.png" width="24%">
+<img src="./proofs/gen_e7ba952e.png" width="24%">
+<img src="./proofs/gen_76f61994.png" width="24%">
+<img src="./proofs/gen_7ecbeb47.png" width="24%">
+
+<br><br>
+
+#### 📷 Photorealism & Portraits
+*Pipelines: `hyperrealistic` · `difconsistency` · `ethnicity`*
+
+<img src="./proofs/gen_14ae14d4.png" width="24%">
+<img src="./proofs/gen_1ea8b73d.png" width="24%">
+<img src="./proofs/gen_49a3e89b.png" width="24%">
+<img src="./proofs/gen_4cef189d.png" width="24%">
+
+<br><br>
+
+#### 🚗 Automotive & Industrial
+*Pipeline: `cars` — LoRA variants: RX7, F1, Sedan, Speedtail*
+
+<img src="./proofs/gen_50beb40d.png" width="24%">
+<img src="./proofs/gen_5cffa386.png" width="24%">
+<img src="./proofs/gen_408e8c19.png" width="24%">
+<img src="./proofs/gen_47a33d08.png" width="24%">
+
+<br><br>
+
+#### 🌌 Landscapes & Environments
+*Pipelines: `space` · `drawing` · `diffusionbrush`*
+
+<img src="./proofs/gen_09541cfa.png" width="48%">
+<img src="./proofs/gen_060cc7de.png" width="48%">
+
+<img src="./proofs/gen_623fc306.png" width="32%">
+<img src="./proofs/gen_75f7c2cc.png" width="32%">
+<img src="./proofs/gen_76854796.png" width="32%">
+
+<br><br>
+
+#### 🧟 Horror & Dark Fantasy
+*Pipelines: `horror` · `zombie` · `papercut`*
+
+<img src="./proofs/gen_7a1d2228.png" width="24%">
+<img src="./proofs/gen_94a65d7c.png" width="24%">
+<img src="./proofs/gen_997e0985.png" width="24%">
+<img src="./proofs/gen_ac67204f.png" width="24%">
+
+<br><br>
+
+#### 🎨 Stylized & Experimental
+*Mixed pipelines — demonstrating engine versatility across art directions*
+
+<img src="./proofs/gen_c161c469.png" width="24%">
+<img src="./proofs/gen_c5092bdc.png" width="24%">
+<img src="./proofs/gen_d107e533.png" width="24%">
+<img src="./proofs/gen_d2934a22.png" width="24%">
+
+<img src="./proofs/gen_da8c363c.png" width="24%">
+<img src="./proofs/gen_db4bdd02.png" width="24%">
+<img src="./proofs/gen_dc23b04c.png" width="24%">
+<img src="./proofs/gen_dd645e00.png" width="24%">
+
+<img src="./proofs/gen_e1f16666.png" width="32%">
+<img src="./proofs/gen_ecad301d.png" width="32%">
+<img src="./proofs/gen_3b0d9925.png" width="32%">
+
+</div>
+
+<br>
+
+> [!NOTE]
+> All renders used **sequential CPU offloading**, **VAE slicing**, and **subprocess isolation** to guarantee zero OOM failures across a continuous 34-image batch on 4 GB VRAM.
 
 </details>
 
