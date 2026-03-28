@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Image as ImageIcon, Sparkles, Download, Palette } from 'lucide-react';
-import FluidBackground, { ThemeName, THEMES } from '@/components/FluidBackground';
+import FluidBackground, { ThemeName } from '@/components/FluidBackground';
+import ThemeDropdown from '@/components/ThemeDropdown';
 import { 
   fetchPipelines, 
   submitGeneration, 
@@ -115,19 +116,7 @@ export default function Home() {
       {/* 🌌 Dynamic WebGL Fluid Background */}
       <FluidBackground theme={appTheme} />
 
-      {/* Floating Theme Selector */}
-      <div className="absolute top-4 right-4 z-50 flex items-center gap-3 bg-neutral-900/60 backdrop-blur-xl border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl">
-        <Palette className="w-4 h-4 text-neutral-400" />
-        <select 
-          value={appTheme} 
-          onChange={e => setAppTheme(e.target.value as ThemeName)}
-          className="bg-transparent text-sm font-medium text-neutral-200 focus:outline-none cursor-pointer appearance-none pr-2"
-        >
-          {(Object.keys(THEMES) as Array<ThemeName>).map(theme => (
-            <option key={theme} value={theme} className="bg-neutral-900 py-1">{theme} Theme</option>
-          ))}
-        </select>
-      </div>
+      <ThemeDropdown value={appTheme} onChange={setAppTheme} />
 
       <div className="relative z-10 w-full h-full flex flex-col md:flex-row p-2 sm:p-4 gap-4 md:gap-6 pt-[80px] md:pt-4">
         
@@ -234,14 +223,14 @@ export default function Home() {
         </motion.aside>
 
         {/* 🖼️ CANVAS AREA (Framer Motion Layouts) */}
-        <section className="flex-1 h-full flex flex-col items-center justify-center relative">
+        <section className="flex-1 h-full max-h-full flex flex-col items-center justify-center relative overflow-hidden">
           <motion.div 
             layout 
-            className="relative flex items-center justify-center rounded-2xl overflow-hidden bg-black/20 backdrop-blur-md border border-white/5 shadow-2xl"
-            style={{ 
-              width: aspectRatio === 'landscape' ? 768 : 512, 
-              height: aspectRatio === 'portrait' ? 768 : 512 
-            }}
+            className={`relative flex items-center justify-center rounded-2xl overflow-hidden bg-black/20 backdrop-blur-md border border-white/5 shadow-2xl ${
+              aspectRatio === 'square' ? 'aspect-square h-full max-h-[85vh] w-auto' 
+              : aspectRatio === 'landscape' ? 'aspect-video w-[90%] max-w-4xl' 
+              : 'aspect-[2/3] h-full max-h-[85vh] w-auto'
+            }`}
           >
             <AnimatePresence mode="wait">
               {!isGenerating && !currentImage && (
