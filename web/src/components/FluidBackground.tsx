@@ -66,6 +66,26 @@ vec2 hash2( vec2 p ) {
   return fract(sin(p)*43758.5453);
 }
 
+// === Fish Simulation Helper ===
+float drawFish(vec2 uv, vec2 center, float time) {
+    vec2 p = uv - center;
+    // Rotate fish to face direction of movement
+    float s = sin(time*0.5);
+    float c = cos(time*0.5);
+    p = mat2(c, -s, s, c) * p;
+    
+    // Body (Ellipse)
+    float body = length(p * vec2(1.0, 3.0));
+    float bodyMask = smoothstep(0.15, 0.1, body);
+    
+    // Tail
+    vec2 tailPos = p + vec2(0.0, 0.15);
+    float tail = length(tailPos * vec2(1.5, 1.0) - vec2(0.0, 0.05));
+    float tailMask = smoothstep(0.1, 0.05, tail) * step(p.y, -0.1);
+    
+    return max(bodyMask, tailMask);
+}
+
 void main() {
   vec2 uv = vUv;
   vec3 finalColor = uColor1;
@@ -78,26 +98,39 @@ void main() {
     finalColor = mix(color, uColor3, noise2 + 0.3);
   } 
   else if (uTheme < 1.5) {
-    // ☀️ Sonoma: Pulsing Sunset Orb
+    // ☀️ Sonoma: Pulsing Sunset Star
     vec2 pos = uv - vec2(0.5);
     float dist = length(pos);
-    float pulse = sin(uTime * 3.0) * 0.05 + 0.3;
-    float glow = smoothstep(pulse + 0.1, pulse - 0.4, dist);
-    vec3 bg = mix(uColor1, uColor2, uv.y);
-    finalColor = mix(bg, uColor3, glow);
-    finalColor += uColor2 * (0.05 / (dist + 0.01)); // intense ring
+    float pulse = sin(uTime * 4.0) * 0.03 + 0.35;
+    float glow = smoothstep(pulse + 0.2, pulse - 0.4, dist);
+    
+    // Lens flare effect
+    float flare = 0.01 / (dist + 0.01);
+    float streaks = max(0.0, 1.0 - length(pos * vec2(10.0, 0.5))) + 
+                    max(0.0, 1.0 - length(pos * vec2(0.5, 10.0)));
+    
+    vec3 sunColor = mix(uColor2, uColor3, sin(uTime)*0.5+0.5);
+    finalColor = mix(uColor1, sunColor, glow);
+    finalColor += sunColor * flare * 0.5;
+    finalColor += sunColor * streaks * 0.2;
   }
   else if (uTheme < 2.5) {
-    // 🌊 Catalina: Oceanic Sine Waves (Exaggerated)
-    float waveX = sin(uv.x * 20.0 + uTime * 2.0) * 0.2;
-    float waveY = sin(uv.y * 20.0 + uTime * 2.5 + waveX) * 0.2;
-    float ripple = cnoise(vec3(uv * 10.0 + vec2(waveX, waveY), uTime * 0.5));
-    finalColor = mix(uColor1, uColor2, ripple + 0.5);
-    finalColor = mix(finalColor, uColor3, waveX + waveY + 0.5);
+    // 🐟 Catalina: Swimming Fish in Ocean
+    float wave = sin(uv.x * 12.0 + uTime) * 0.05 + sin(uv.y * 8.0 + uTime * 1.5) * 0.03;
+    vec3 ocean = mix(uColor1, uColor2, uv.y + wave);
+    ocean = mix(ocean, uColor3, sin(uv.x * 20.0 - uTime * 2.0) * 0.1 + 0.1);
+    
+    // Draw 3 swimming fish
+    float fish1 = drawFish(uv, vec2(sin(uTime*0.4)*0.4+0.5, cos(uTime*0.3)*0.3+0.5), uTime);
+    float fish2 = drawFish(uv, vec2(sin(uTime*0.5+2.0)*0.3+0.4, cos(uTime*0.4+1.0)*0.4+0.6), uTime*1.2);
+    float fish3 = drawFish(uv, vec2(sin(uTime*0.3+4.0)*0.5+0.5, cos(uTime*0.6+3.0)*0.2+0.3), uTime*0.8);
+    
+    float totalFish = max(fish1, max(fish2, fish3));
+    finalColor = mix(ocean, uColor3, totalFish);
   }
   else if (uTheme < 3.5) {
-    // 🦠 BigSur: Cellular Blob Voronoi (Exaggerated)
-    vec2 p = uv * 6.0;
+    // 🧠 BigSur: Organic Biological Cells
+    vec2 p = uv * 8.0;
     vec2 i = floor(p);
     vec2 f = fract(p);
     float minDist = 1.0;
@@ -105,31 +138,36 @@ void main() {
       for(int x = -1; x <= 1; x++) {
         vec2 neighbor = vec2(float(x), float(y));
         vec2 pt = hash2(i + neighbor);
-        pt = 0.5 + 0.5 * sin(uTime * 2.0 + 6.2831 * pt);
+        pt = 0.5 + 0.5 * sin(uTime * 2.5 + 6.2831 * pt);
         minDist = min(minDist, length(neighbor + pt - f));
       }
     }
-    float blob = smoothstep(0.4, 0.5, minDist);
-    finalColor = mix(uColor3, uColor1, blob);
+    float cell = smoothstep(0.3, 0.7, minDist);
+    float pulsing = sin(uTime + minDist * 10.0) * 0.5 + 0.5;
+    finalColor = mix(uColor1, uColor2, cell);
+    finalColor = mix(finalColor, uColor3, pulsing * (1.0 - cell));
   }
   else {
-    // 🧊 Sequoia: Matrix Wireframe Grid
-    vec2 gridUV = fract(uv * 30.0 + vec2(uTime * 0.2, uTime * 0.4));
-    float lineX = smoothstep(0.0, 0.1, gridUV.x) - smoothstep(0.9, 1.0, gridUV.x);
-    float lineY = smoothstep(0.0, 0.1, gridUV.y) - smoothstep(0.9, 1.0, gridUV.y);
-    float grid = 1.0 - (lineX * lineY);
+    // 👾 Sequoia: Modern Digital Matrix Grid
+    vec2 gridUV = fract(uv * 40.0 + vec2(uTime * 0.3, uTime * 0.5));
+    float lineX = smoothstep(0.01, 0.02, gridUV.x) - smoothstep(0.02, 0.03, gridUV.x);
+    float lineY = smoothstep(0.01, 0.02, gridUV.y) - smoothstep(0.02, 0.03, gridUV.y);
+    float grid = max(lineX, lineY);
     
-    // Distorted pixelation effect
-    float scanline = sin(uv.y * 100.0 - uTime * 10.0) * 0.1;
+    // Falling digital "code" effect
+    float code = smoothstep(0.95, 1.0, fract(uv.y * 10.0 + uTime * 2.0 + sin(floor(uv.x * 20.0))));
     
-    finalColor = mix(uColor1, uColor2, grid + scanline);
-    float dist = distance(uv, vec2(0.5));
-    finalColor = mix(finalColor, uColor3, step(0.4, dist)); // sharp mask
+    finalColor = mix(uColor1, uColor2, grid);
+    finalColor = mix(finalColor, uColor3, code * 0.6);
+    
+    // Vignette
+    float d = distance(uv, vec2(0.5));
+    finalColor *= step(d, 0.8) * (1.1 - d);
   }
 
-  // Soft Vignette
+  // Final Professional Vignette
   float dist = distance(uv, vec2(0.5));
-  finalColor *= smoothstep(1.0, 0.1, dist * 0.8);
+  finalColor *= smoothstep(1.0, 0.3, dist * 0.8);
 
   gl_FragColor = vec4(finalColor, 1.0);
 }
@@ -142,10 +180,10 @@ const hexToVec3 = (hex: string) => {
 
 export const THEMES = {
   Monterey: { index: 0, c1: '#0A0A0B', c2: '#4F46E5', c3: '#9333EA' },
-  Sonoma: { index: 1, c1: '#7f1d1d', c2: '#ea580c', c3: '#fde047' },
-  Catalina: { index: 2, c1: '#020617', c2: '#0284c7', c3: '#38bdf8' },
-  BigSur: { index: 3, c1: '#14532d', c2: '#16a34a', c3: '#bef264' },
-  Sequoia: { index: 4, c1: '#171717', c2: '#737373', c3: '#ffffff' }
+  Sonoma: { index: 1, c1: '#421b1b', c2: '#ca8a04', c3: '#fde047' },
+  Catalina: { index: 2, c1: '#082f49', c2: '#0ea5e9', c3: '#67e8f9' },
+  BigSur: { index: 3, c1: '#064e3b', c2: '#059669', c3: '#34d399' },
+  Sequoia: { index: 4, c1: '#000000', c2: '#262626', c3: '#ffffff' }
 };
 
 export type ThemeName = keyof typeof THEMES;
@@ -159,14 +197,14 @@ function FluidShader({ activeTheme }: { activeTheme: ThemeName }) {
     uColor1: { value: hexToVec3(THEMES[activeTheme].c1) },
     uColor2: { value: hexToVec3(THEMES[activeTheme].c2) },
     uColor3: { value: hexToVec3(THEMES[activeTheme].c3) }
-  }), []);
+  }), []); // Keep reference stable to avoid dangling uniform updates
 
   useFrame((state) => {
     if (!materialRef.current) return;
     materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
     
-    const targetIdx = THEMES[activeTheme].index;
-    materialRef.current.uniforms.uTheme.value = targetIdx;
+    // Set theme index immediately (no lerp for discrete branches)
+    materialRef.current.uniforms.uTheme.value = THEMES[activeTheme].index;
 
     const target1 = new THREE.Color(THEMES[activeTheme].c1);
     const target2 = new THREE.Color(THEMES[activeTheme].c2);
@@ -176,10 +214,9 @@ function FluidShader({ activeTheme }: { activeTheme: ThemeName }) {
     const current2 = new THREE.Color().fromArray(materialRef.current.uniforms.uColor2.value);
     const current3 = new THREE.Color().fromArray(materialRef.current.uniforms.uColor3.value);
     
-    // We lerp colors fast so new math functions pop instantly but elegantly
-    current1.lerp(target1, 0.1);
-    current2.lerp(target2, 0.1);
-    current3.lerp(target3, 0.1);
+    current1.lerp(target1, 0.05);
+    current2.lerp(target2, 0.05);
+    current3.lerp(target3, 0.05);
     
     materialRef.current.uniforms.uColor1.value = [current1.r, current1.g, current1.b];
     materialRef.current.uniforms.uColor2.value = [current2.r, current2.g, current2.b];

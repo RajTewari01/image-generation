@@ -132,8 +132,8 @@ export default function Home() {
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-semibold tracking-tight text-lg leading-tight">Image-Gen App</h1>
-              <p className="text-xs font-medium text-neutral-400">Made by Biswadeep Tewari</p>
+              <h1 className="font-semibold tracking-tight text-lg leading-tight uppercase">Image-Gen App</h1>
+              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">By Biswadeep Tewari</p>
             </div>
           </div>
 
@@ -166,8 +166,8 @@ export default function Home() {
                   onChange={e => setActiveType(e.target.value)}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all cursor-pointer"
                 >
-                  {Object.entries(pipelines.pipelines[activePipeline].types).map(([k, desc]) => (
-                    <option key={k} value={k}>{k} - {String(desc)}</option>
+                  {Object.entries(pipelines.pipelines[activePipeline].types).map(([k]) => (
+                    <option key={k} value={k}>{k}</option>
                   ))}
                 </select>
               </motion.div>
@@ -222,14 +222,14 @@ export default function Home() {
           </button>
         </motion.aside>
 
-        {/* 🖼️ CANVAS AREA (Framer Motion Layouts) */}
-        <section className="flex-1 h-full max-h-full flex flex-col items-center justify-center relative overflow-hidden">
+        {/* 🖼️ CANVAS AREA (Symmetrical to Sidebar Height) */}
+        <section className="flex-1 h-full min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden px-4">
           <motion.div 
             layout 
-            className={`relative flex items-center justify-center rounded-2xl overflow-hidden bg-black/20 backdrop-blur-md border border-white/5 shadow-2xl ${
-              aspectRatio === 'square' ? 'aspect-square h-full max-h-[85vh] w-auto' 
-              : aspectRatio === 'landscape' ? 'aspect-video w-[90%] max-w-4xl' 
-              : 'aspect-[2/3] h-full max-h-[85vh] w-auto'
+            className={`relative flex items-center justify-center rounded-[3rem] overflow-hidden bg-black/20 backdrop-blur-md border border-white/5 shadow-2xl transition-all duration-700 ${
+              aspectRatio === 'square' ? 'h-full aspect-square w-auto' 
+              : aspectRatio === 'landscape' ? 'w-full aspect-video h-auto max-h-full' 
+              : 'h-full aspect-[2/3] w-auto'
             }`}
           >
             <AnimatePresence mode="wait">
