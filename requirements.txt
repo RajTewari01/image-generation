@@ -1,0 +1,33 @@
+# =============================================================================
+# Image Gen — Dependencies
+# =============================================================================
+# Install with: pip install -r requirements.txt
+#
+# NOTE: PyTorch must be installed separately with CUDA support.
+# Visit https://pytorch.org/get-started/locally/ for instructions.
+#
+# Example (CUDA 12.1):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# =============================================================================
+
+# --- Core Diffusion ---
+diffusers>=0.25.0
+transformers>=4.30.0
+accelerate>=0.20.0
+safetensors>=0.3.0
+
+# --- Image Processing ---
+Pillow>=9.0.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+
+# --- Upscaling (Real-ESRGAN) ---
+basicsr>=1.4.2
+realesrgan>=0.3.0
+
+# --- ControlNet Preprocessing ---
+controlnet-aux>=0.0.7
+
+# --- API & Utilities ---
+requests>=2.28.0
+python-dotenv>=1.0.0

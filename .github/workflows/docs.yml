@@ -1,0 +1,86 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "docs/**"
+
+jobs:
+  docs:
+    name: Documentation Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Markdown Files Exist
+        run: |
+          echo "=== Checking Required Documentation ==="
+          files=(
+            "README.md"
+            "LICENSE"
+            "docs/ARCHITECTURE.md"
+            "docs/CUSTOM_PIPELINES.md"
+            "docs/UPSCALERS.md"
+            "docs/MODELS.md"
+          )
+          missing=0
+          for f in "${files[@]}"; do
+            if [ -f "$f" ]; then
+              echo "  ✅ $f"
+            else
+              echo "  ❌ MISSING: $f"
+              missing=1
+            fi
+          done
+          if [ $missing -eq 1 ]; then
+            echo "::error::Required documentation files are missing"
+            exit 1
+          fi
+
+      - name: Check README Sections
+        run: |
+          echo "=== Checking README Structure ==="
+          required_sections=(
+            "Quick Start"
+            "Architecture"
+            "Features"
+            "Model Downloads"
+            "CLI Reference"
+            "Creating Custom Pipelines"
+            "Project Structure"
+          )
+          missing=0
+          for section in "${required_sections[@]}"; do
+            if grep -qi "$section" README.md; then
+              echo "  ✅ Section: $section"
+            else
+              echo "  ❌ MISSING Section: $section"
+              missing=1
+            fi
+          done
+          if [ $missing -eq 1 ]; then
+            echo "::warning::Some README sections are missing"
+          fi
+
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: "**/*.md"
+          config: |
+            {
+              "MD013": false,
+              "MD033": false,
+              "MD041": false,
+              "MD024": false,
+              "MD046": false
+            }
+        continue-on-error: true

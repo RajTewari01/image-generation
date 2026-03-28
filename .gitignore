@@ -1,0 +1,56 @@
+# =============================================================================
+# Image Gen — .gitignore
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# --- Virtual Environments ---
+venv/
+.venv/
+venvs/
+env/
+
+# --- AI Model Weights (Multi-GB files — NEVER commit) ---
+models/
+*.safetensors
+*.ckpt
+*.pth
+*.bin
+*.onnx
+*.pt
+
+# --- Generated Output ---
+output/
+
+# --- Databases ---
+*.db
+
+# --- Secrets & Environment ---
+.env
+.env.local
+*.env.local
+!.env.example
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Temporary ---
+*.tmp
+*.bak
+*.log

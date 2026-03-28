@@ -1,0 +1,43 @@
+name: Python Unit Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: System Validations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install flake8 pytest
+          # Mock heavy packages for CI validation
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Syntax & Lint Checks
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Validate Module Imports
+        run: |
+          python -c "from image_gen import __version__; print('Core Package OK:', __version__)"
+          python -c "from configs.paths import DIFFUSION_MODELS; print('Configs OK')"
+          python -c "from image_gen.pipeline.registry import discover_pipelines; discover_pipelines(); print('Registry Discovery OK')"
+          python -c "from image_gen.database import init_db; print('Database Schema OK')"

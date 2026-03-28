@@ -1,0 +1,92 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secrets-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+  gitignore-check:
+    name: Gitignore Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check No Model Weights Committed
+        run: |
+          echo "=== Checking for accidentally committed model weights ==="
+          violations=0
+
+          # Check for large binary files
+          for ext in safetensors ckpt pth bin onnx; do
+            files=$(find . -name "*.$ext" -not -path "./.git/*" 2>/dev/null)
+            if [ -n "$files" ]; then
+              echo "::error::Found .$ext files in repo: $files"
+              violations=1
+            fi
+          done
+
+          # Check for .env files (not .env.example)
+          env_files=$(find . -name ".env" -o -name ".env.local" -not -path "./.git/*" 2>/dev/null)
+          if [ -n "$env_files" ]; then
+            echo "::error::Found .env files in repo: $env_files"
+            violations=1
+          fi
+
+          # Check for database files
+          db_files=$(find . -name "*.db" -not -path "./.git/*" 2>/dev/null)
+          if [ -n "$db_files" ]; then
+            echo "::error::Found .db files in repo: $db_files"
+            violations=1
+          fi
+
+          if [ $violations -eq 0 ]; then
+            echo "✅ No sensitive files detected"
+          else
+            exit 1
+          fi
+
+      - name: Verify .gitignore Patterns
+        run: |
+          echo "=== Checking .gitignore has required patterns ==="
+          required_patterns=(
+            "*.safetensors"
+            "*.ckpt"
+            "*.pth"
+            "*.db"
+            ".env"
+            "models/"
+            "output/"
+            "__pycache__"
+          )
+          missing=0
+          for pattern in "${required_patterns[@]}"; do
+            if grep -qF "$pattern" .gitignore; then
+              echo "  ✅ $pattern"
+            else
+              echo "  ❌ MISSING: $pattern"
+              missing=1
+            fi
+          done
+          if [ $missing -eq 1 ]; then
+            echo "::error::Required .gitignore patterns are missing"
+            exit 1
+          fi
