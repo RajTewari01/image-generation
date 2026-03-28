@@ -33,5 +33,5 @@ def load(pipe_config) -> Callable:
         pipe_config,
         use_karras_sigmas=True,
         algorithm_type="sde-dpmsolver++",
-        solver_order=2  # 2M = second-order multi-step
+        solver_order=2,  # 2M = second-order multi-step
     )

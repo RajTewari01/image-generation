@@ -98,9 +98,9 @@ REALISTIC_NEGATIVE = (
 # =============================================================================
 
 ASPECT_RATIOS = {
-    "portrait": (512, 768),       # Standard portrait
-    "landscape": (768, 512),      # Standard landscape
-    "square": (512, 512),         # Square format
+    "portrait": (512, 768),  # Standard portrait
+    "landscape": (768, 512),  # Standard landscape
+    "square": (512, 512),  # Square format
 }
 
 AspectType = Literal["portrait", "landscape", "square"]
@@ -109,6 +109,7 @@ AspectType = Literal["portrait", "landscape", "square"]
 # =============================================================================
 # DETECTION FUNCTIONS
 # =============================================================================
+
 
 def _detect_model(prompt: str) -> ModelType:
     """Detect best model based on prompt keywords."""
@@ -143,26 +144,36 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
 # MAIN CONFIG FUNCTION
 # =============================================================================
 
+
 @register_pipeline(
     name="hyperrealistic",
-    keywords=["hyperrealistic", "realistic", "photorealistic", "photo", "dreamshaper",
-              "real person", "realistic vision", "typhoon", "neverending dream"],
+    keywords=[
+        "hyperrealistic",
+        "realistic",
+        "photorealistic",
+        "photo",
+        "dreamshaper",
+        "real person",
+        "realistic vision",
+        "typhoon",
+        "neverending dream",
+    ],
     description="Ultra-realistic human generation using top realistic checkpoints",
     types={
         "realistic_vision": "Realistic Vision V6 - Photorealistic humans",
         "dreamshaper": "DreamShaper 8 - Versatile realism",
         "neverending": "NeverendingDream - High detail",
         "digital": "Realistic Digital V6 - Clean digital",
-        "typhoon": "Typhoon - Dramatic lighting"
-    }
+        "typhoon": "Typhoon - Dramatic lighting",
+    },
 )
 def get_hyperrealistic_config(
-        prompt: str,
-        model: Optional[ModelType] = None,
-        aspect: Optional[AspectType] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        random_model: bool = False,
+    prompt: str,
+    model: Optional[ModelType] = None,
+    aspect: Optional[AspectType] = None,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    random_model: bool = False,
 ) -> PipelineConfigs:
     """
     Get Hyperrealistic pipeline configuration.
@@ -210,12 +221,9 @@ def get_hyperrealistic_config(
         output_dir=output_dir,
         prompt=final_prompt,
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-
         # dpm++_2m_karras is best for realism but euler_a is safer for VRAM
         scheduler_name="dpm++_2m_karras",
-
         neg_prompt=REALISTIC_NEGATIVE,
-
         width=width,
         height=height,
         steps=selected["steps"],
@@ -227,13 +235,16 @@ def get_hyperrealistic_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def real_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate realistic portrait."""
     return get_hyperrealistic_config(prompt, aspect="portrait", **kwargs)
 
+
 def real_landscape(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate realistic landscape/scene."""
     return get_hyperrealistic_config(prompt, aspect="landscape", **kwargs)
+
 
 def real_random(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate with random realistic model."""

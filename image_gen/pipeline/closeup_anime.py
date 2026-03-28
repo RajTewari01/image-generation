@@ -58,17 +58,20 @@ COMMON_NEGATIVE = (
 
 @register_pipeline(
     name="closeup_anime",
-    keywords=["closeup anime", "anime portrait", "anime face", "anime close-up",
-              "magical girl", "violet evergarden", "anime headshot"],
+    keywords=[
+        "closeup anime",
+        "anime portrait",
+        "anime face",
+        "anime close-up",
+        "magical girl",
+        "violet evergarden",
+        "anime headshot",
+    ],
     description="High-quality anime closeup portraits with Violet Evergarden LoRA",
-    types={}
+    types={},
 )
 def get_config(
-        prompt: str,
-        use_style_lora: bool = True,
-        width: int = 512,
-        height: int = 768,
-        use_template: bool = True
+    prompt: str, use_style_lora: bool = True, width: int = 512, height: int = 768, use_template: bool = True
 ) -> PipelineConfigs:
     """
     Get Closeup Anime pipeline configuration.
@@ -94,10 +97,12 @@ def get_config(
     loras = []
     if use_style_lora:
         print("[CloseupAnime] Applied 'Violet Evergarden' style LoRA")
-        loras.append(LoraConfig(
-            lora_path=LORA_MODELS["violet_evergarden"],
-            scale=0.6  # Moderate strength for style influence without overriding
-        ))
+        loras.append(
+            LoraConfig(
+                lora_path=LORA_MODELS["violet_evergarden"],
+                scale=0.6,  # Moderate strength for style influence without overriding
+            )
+        )
 
     # 3. Return Config
     return PipelineConfigs(
@@ -106,18 +111,15 @@ def get_config(
         prompt=final_prompt,
         neg_prompt=COMMON_NEGATIVE,
         style_type="anime",  # Auto-selects R-ESRGAN 4x+ Anime6B
-
         # Use default baked-in VAE (external VAE downloads failing)
         vae="default",
         embeddings=[EMBEDDING_FASTNEGATIVE],
-
         scheduler_name="dpm++_2m_karras",
         width=width,
         height=height,
         steps=25,
         cfg=7.0,
         clip_skip=2,  # Standard for most anime models
-
         lora=loras,
         c_net=[],
     )
@@ -126,6 +128,7 @@ def get_config(
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def closeup_anime(prompt: str, **kwargs) -> PipelineConfigs:
     """Quick config for anime closeups."""
@@ -142,7 +145,7 @@ if __name__ == "__main__":
     ]
 
     for p in test_prompts:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {p}")
         config = closeup_anime(p)
         print(f"Model: {config.base_model.name}")

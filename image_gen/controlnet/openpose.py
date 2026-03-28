@@ -39,11 +39,7 @@ _controlnet = None
 _detector = None
 
 
-def detect(
-    image: Image.Image,
-    include_hand: bool = True,
-    include_face: bool = True
-) -> Image.Image:
+def detect(image: Image.Image, include_hand: bool = True, include_face: bool = True) -> Image.Image:
     """
     Detect human pose using OpenPose.
 
@@ -61,12 +57,10 @@ def detect(
     if _detector is None:
         try:
             from controlnet_aux import OpenposeDetector
+
             _detector = OpenposeDetector.from_pretrained("lllyasviel/Annotators")
         except ImportError:
-            raise ImportError(
-                "controlnet_aux is required for pose detection. "
-                "Install with: pip install controlnet_aux"
-            )
+            raise ImportError("controlnet_aux is required for pose detection. Install with: pip install controlnet_aux")
 
     return _detector(image, include_hand=include_hand, include_face=include_face)
 

@@ -31,5 +31,5 @@ def load(pipe_config) -> Callable:
     return DPMSolverMultistepScheduler.from_config(
         pipe_config,
         use_karras_sigmas=True,
-        algorithm_type="dpmsolver++"  # 2M variant (deterministic)
+        algorithm_type="dpmsolver++",  # 2M variant (deterministic)
     )

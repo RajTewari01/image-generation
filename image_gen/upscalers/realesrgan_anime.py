@@ -52,18 +52,13 @@ def load(half: bool = False, tile: int = 256):
             scale=config["scale"],
             tile=tile,
             half=half,
-            num_block=config["num_block"]  # Only 6 blocks!
+            num_block=config["num_block"],  # Only 6 blocks!
         )
 
     return _upscaler
 
 
-def upscale(
-    image: Image.Image,
-    scale: float = 4.0,
-    half: bool = False,
-    tile: int = 256
-) -> Image.Image:
+def upscale(image: Image.Image, scale: float = 4.0, half: bool = False, tile: int = 256) -> Image.Image:
     """
     Upscale an image using R-ESRGAN 4x+ Anime6B.
 

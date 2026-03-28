@@ -23,5 +23,5 @@ __all__ = [
     "get_recent_images",
     "get_images_by_model",
     "delete_image_record",
-    "DB_PATH"
+    "DB_PATH",
 ]

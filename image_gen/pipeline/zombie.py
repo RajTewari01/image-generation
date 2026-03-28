@@ -109,18 +109,56 @@ def _detect_shot_type(prompt: str) -> ShotType:
     prompt_lower = prompt.lower()
 
     close_keywords = [
-        "close-up", "closeup", "portrait", "face", "single", "one zombie",
-        "detailed", "macro", "head", "bust", "solo"
+        "close-up",
+        "closeup",
+        "portrait",
+        "face",
+        "single",
+        "one zombie",
+        "detailed",
+        "macro",
+        "head",
+        "bust",
+        "solo",
     ]
     mid_keywords = [
-        "two", "three", "2", "3", "couple", "few", "small group",
-        "mid shot", "medium shot", "mid-shot", "pair"
+        "two",
+        "three",
+        "2",
+        "3",
+        "couple",
+        "few",
+        "small group",
+        "mid shot",
+        "medium shot",
+        "mid-shot",
+        "pair",
     ]
     horde_keywords = [
-        "horde", "hordes", "crowd", "crowds", "many", "group", "groups",
-        "army", "armies", "swarm", "wave", "apocalypse", "invasion",
-        "herd", "mob", "pack", "multiple", "several", "dozens",
-        "wide shot", "far", "distant", "panorama", "landscape"
+        "horde",
+        "hordes",
+        "crowd",
+        "crowds",
+        "many",
+        "group",
+        "groups",
+        "army",
+        "armies",
+        "swarm",
+        "wave",
+        "apocalypse",
+        "invasion",
+        "herd",
+        "mob",
+        "pack",
+        "multiple",
+        "several",
+        "dozens",
+        "wide shot",
+        "far",
+        "distant",
+        "panorama",
+        "landscape",
     ]
 
     for kw in horde_keywords:
@@ -139,32 +177,54 @@ def _detect_shot_type(prompt: str) -> ShotType:
 def _detect_zombie_type(prompt: str) -> ZombieType:
     """Detect if Chinese zombie is requested using scoring system."""
     import re
+
     prompt_lower = prompt.lower()
 
     # Chinese zombie keywords with weights
     chinese_keywords = {
-        "chinese": 3, "qing": 3, "jiangshi": 3, "hopping vampire": 3,
-        "china": 2, "dynasty": 2, "talisman": 2, "paper talisman": 2,
-        "mandarin": 1, "temple": 1, "ancient china": 3, "qing dynasty": 3,
-        "hopping": 2, "hong kong": 1, "mr vampire": 2,
+        "chinese": 3,
+        "qing": 3,
+        "jiangshi": 3,
+        "hopping vampire": 3,
+        "china": 2,
+        "dynasty": 2,
+        "talisman": 2,
+        "paper talisman": 2,
+        "mandarin": 1,
+        "temple": 1,
+        "ancient china": 3,
+        "qing dynasty": 3,
+        "hopping": 2,
+        "hong kong": 1,
+        "mr vampire": 2,
     }
 
     # Western/normal zombie keywords
     normal_keywords = {
-        "walking dead": 3, "rotting": 2, "undead": 2, "apocalypse": 2,
-        "gore": 2, "blood": 1, "brain": 2, "western": 2, "american": 1,
-        "resident evil": 2, "infection": 2, "outbreak": 2, "virus": 1,
+        "walking dead": 3,
+        "rotting": 2,
+        "undead": 2,
+        "apocalypse": 2,
+        "gore": 2,
+        "blood": 1,
+        "brain": 2,
+        "western": 2,
+        "american": 1,
+        "resident evil": 2,
+        "infection": 2,
+        "outbreak": 2,
+        "virus": 1,
     }
 
     chinese_score = 0
     normal_score = 0
 
     for keyword, weight in chinese_keywords.items():
-        if re.search(rf'\b{keyword}\b', prompt_lower):
+        if re.search(rf"\b{keyword}\b", prompt_lower):
             chinese_score += weight
 
     for keyword, weight in normal_keywords.items():
-        if re.search(rf'\b{keyword}\b', prompt_lower):
+        if re.search(rf"\b{keyword}\b", prompt_lower):
             normal_score += weight
 
     # Return based on score (chinese needs to win clearly)
@@ -176,21 +236,31 @@ def _detect_zombie_type(prompt: str) -> ZombieType:
 
 @register_pipeline(
     name="zombie",
-    keywords=["zombie", "undead", "walking dead", "jiangshi", "horde", "rotting",
-              "apocalypse", "infection", "chinese zombie", "qing dynasty"],
+    keywords=[
+        "zombie",
+        "undead",
+        "walking dead",
+        "jiangshi",
+        "horde",
+        "rotting",
+        "apocalypse",
+        "infection",
+        "chinese zombie",
+        "qing dynasty",
+    ],
     description="Walking Dead and Chinese Qing zombies with multiple shot types",
     types={
         "close": "Close-up portrait of single zombie",
         "mid": "Mid-shot with 2-3 zombies",
         "horde": "Wide shot with zombie horde",
-        "chinese": "Chinese Qing dynasty jiangshi"
-    }
+        "chinese": "Chinese Qing dynasty jiangshi",
+    },
 )
 def get_zombie_config(
-        prompt: str,
-        shot_type: Optional[ShotType] = None,
-        zombie_type: Optional[ZombieType] = None,
-        auto_detect: bool = True
+    prompt: str,
+    shot_type: Optional[ShotType] = None,
+    zombie_type: Optional[ZombieType] = None,
+    auto_detect: bool = True,
 ) -> PipelineConfigs:
     """
     Get Zombie pipeline configuration.
@@ -227,10 +297,7 @@ def get_zombie_config(
         trigger = "Chinese_Qing_Zombie"
         width, height = 512, 768
 
-        loras.append(LoraConfig(
-            lora_path=LORA_MODELS["chinese_zombie"],
-            scale=0.8
-        ))
+        loras.append(LoraConfig(lora_path=LORA_MODELS["chinese_zombie"], scale=0.8))
     else:
         # Walking Dead zombie
         base_model = MODEL_WALKING_DEAD
@@ -277,17 +344,21 @@ def get_zombie_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def zombie_closeup(prompt: str, **kwargs) -> PipelineConfigs:
     """Single zombie portrait."""
     return get_zombie_config(prompt, shot_type="close", zombie_type="normal", **kwargs)
+
 
 def zombie_midshot(prompt: str, **kwargs) -> PipelineConfigs:
     """Small group of 2-3 zombies."""
     return get_zombie_config(prompt, shot_type="mid", zombie_type="normal", **kwargs)
 
+
 def zombie_horde(prompt: str, **kwargs) -> PipelineConfigs:
     """Crowd of zombies, wide shot."""
     return get_zombie_config(prompt, shot_type="horde", zombie_type="normal", **kwargs)
+
 
 def chinese_zombie(prompt: str, **kwargs) -> PipelineConfigs:
     """Chinese Qing dynasty jiangshi zombie."""
@@ -299,12 +370,12 @@ if __name__ == "__main__":
 
     test_cases = [
         ("rotting zombie in abandoned hospital",),
-        ("horde of zombies attacking city", ),
+        ("horde of zombies attacking city",),
         ("chinese qing dynasty zombie with talisman",),
     ]
 
     for (prompt,) in test_cases:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {prompt[:50]}...")
         config = get_zombie_config(prompt)
         print(f"  Model: {config.base_model.name}")

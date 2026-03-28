@@ -42,7 +42,7 @@ class DiffusionEngine:
         "anime": "anime.vae.safetensors",
         "realistic": "vae-ft-mse-840000-ema-pruned.safetensors",
         "semi-realistic": "orangemix.vae.safetensors",
-        "default": None  # Use baked-in VAE
+        "default": None,  # Use baked-in VAE
     }
 
     # Scheduler module mapping (lazy loaded)
@@ -52,7 +52,7 @@ class DiffusionEngine:
         "dpm++_sde_karras": "dpmpp_sde_karras",
         "dpm++_2m_sde_karras": "dpmpp_2m_sde_karras",
         "ddim": "ddim",
-        "lms": "lms"
+        "lms": "lms",
     }
 
     # Upscaler module mapping (lazy loaded)
@@ -61,7 +61,7 @@ class DiffusionEngine:
         "Lanczos": "lanczos",
         "R-ESRGAN 4x+": "realesrgan_4x",
         "R-ESRGAN 4x+ Anime6B": "realesrgan_anime",
-        "Diffusion": "diffusion_upscale"
+        "Diffusion": "diffusion_upscale",
     }
 
     def __init__(self, vae_dir: Path = None):
@@ -163,10 +163,7 @@ class DiffusionEngine:
 
         print(f"   -> Loading VAE: {vae_path.name}")
         vae = AutoencoderKL.from_single_file(
-            str(vae_path),
-            torch_dtype=torch.float32,
-            use_safetensors=True,
-            local_files_only=True
+            str(vae_path), torch_dtype=torch.float32, use_safetensors=True, local_files_only=True
         )
         return vae
 
@@ -212,6 +209,7 @@ class DiffusionEngine:
         # Enable low CPU memory usage if accelerate is installed
         try:
             import accelerate
+
             load_kwargs["low_cpu_mem_usage"] = True
         except ImportError:
             pass
@@ -251,13 +249,10 @@ class DiffusionEngine:
             self.pipe = StableDiffusionControlNetPipeline.from_single_file(
                 str(config.base_model),
                 controlnet=controlnet_models if len(controlnet_models) > 1 else controlnet_models[0],
-                **load_kwargs
+                **load_kwargs,
             )
         else:
-            self.pipe = StableDiffusionPipeline.from_single_file(
-                str(config.base_model),
-                **load_kwargs
-            )
+            self.pipe = StableDiffusionPipeline.from_single_file(str(config.base_model), **load_kwargs)
 
         # 3.5 Load Textual Inversion Embeddings
         if hasattr(config, "embeddings") and config.embeddings:
@@ -338,7 +333,7 @@ class DiffusionEngine:
             "height": config.height,
             "num_inference_steps": config.steps,
             "guidance_scale": config.cfg,
-            "generator": generator
+            "generator": generator,
         }
 
         # Add ControlNet inputs if present
@@ -359,6 +354,7 @@ class DiffusionEngine:
 
                 # Load and preprocess the input image using the module's detect() function
                 from PIL import Image as PILImage
+
                 input_image = PILImage.open(cn.image_path)
                 processed_image = cn_module.detect(input_image)
 
@@ -392,10 +388,7 @@ class DiffusionEngine:
             print("[Upscaling] Step 1: Diffusion upscale (hallucinating details)...")
             diffusion_module = self._load_upscaler("Diffusion")
             image = diffusion_module.upscale(
-                base_pipe=self.pipe,
-                image=image,
-                prompt=config.prompt,
-                negative_prompt=config.neg_prompt
+                base_pipe=self.pipe, image=image, prompt=config.prompt, negative_prompt=config.neg_prompt
             )
             print(f"   [Diffusion] Upscale complete: {image.size}")
 
@@ -424,16 +417,14 @@ class DiffusionEngine:
             loras_data = None
             if config.lora:
                 loras_data = [
-                    {"path": str(l.lora_path), "scale": l.scale, "trigger": l.lora_trigger_word}
-                    for l in config.lora
+                    {"path": str(l.lora_path), "scale": l.scale, "trigger": l.lora_trigger_word} for l in config.lora
                 ]
 
             # Prepare ControlNet info for database
             cnets_data = None
             if config.c_net:
                 cnets_data = [
-                    {"type": cn.control_type, "image": str(cn.image_path), "scale": cn.scale}
-                    for cn in config.c_net
+                    {"type": cn.control_type, "image": str(cn.image_path), "scale": cn.scale} for cn in config.c_net
                 ]
 
             save_image_record(
@@ -449,12 +440,12 @@ class DiffusionEngine:
                 cfg=config.cfg,
                 seed=seed,
                 clip_skip=config.clip_skip,
-                vae=str(config.vae) if config.vae else 'default',
+                vae=str(config.vae) if config.vae else "default",
                 scheduler_name=config.scheduler_name,
                 upscale_method=f"{'Diffusion+' if config.add_details else ''}{esrgan_name}+Lanczos",
                 loras=loras_data,
                 controlnets=cnets_data,
-                canny_image_path=canny_save_path if 'canny_save_path' in locals() else None
+                canny_image_path=canny_save_path if "canny_save_path" in locals() else None,
             )
         except Exception as db_err:
             print(f"[DB Warning] Failed to save to database: {db_err}")

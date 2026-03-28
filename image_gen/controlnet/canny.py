@@ -39,12 +39,7 @@ _controlnet = None
 _detector = None
 
 
-def detect(
-    image: Image.Image,
-    low_threshold: int = 100,
-    high_threshold: int = 200,
-    blur_ksize: int = 5
-) -> Image.Image:
+def detect(image: Image.Image, low_threshold: int = 100, high_threshold: int = 200, blur_ksize: int = 5) -> Image.Image:
     """
     Detect edges using Canny edge detection.
 
@@ -63,6 +58,7 @@ def detect(
     if _detector is None:
         try:
             from controlnet_aux import CannyDetector
+
             _detector = CannyDetector()
         except ImportError:
             # Fallback to OpenCV

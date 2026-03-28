@@ -28,7 +28,5 @@ from diffusers import DPMSolverMultistepScheduler
 def load(pipe_config) -> Callable:
     """Load legacy DPM++ SDE Karras scheduler."""
     return DPMSolverMultistepScheduler.from_config(
-        pipe_config,
-        use_karras_sigmas=True,
-        algorithm_type="sde-dpmsolver++"
+        pipe_config, use_karras_sigmas=True, algorithm_type="sde-dpmsolver++"
     )

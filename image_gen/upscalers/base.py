@@ -75,19 +75,19 @@ def create_upscaler(
         num_feat=num_feat,
         num_block=num_block,
         num_grow_ch=num_grow_ch,
-        scale=scale
+        scale=scale,
     )
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Load model
-    loadnet = torch.load(str(model_path), map_location=torch.device('cpu'))
+    loadnet = torch.load(str(model_path), map_location=torch.device("cpu"))
 
     # Handle params_ema key
-    if 'params_ema' in loadnet:
-        keyname = 'params_ema'
+    if "params_ema" in loadnet:
+        keyname = "params_ema"
     else:
-        keyname = 'params'
+        keyname = "params"
 
     if keyname in loadnet:
         loadnet = loadnet[keyname]
@@ -95,7 +95,7 @@ def create_upscaler(
     # Load state dict (standard models should work directly)
     model.load_state_dict(loadnet, strict=True)
     model.eval()
-    if device == 'cuda':
+    if device == "cuda":
         model = model.cuda()
 
     upscaler = RealESRGANer(
@@ -106,17 +106,13 @@ def create_upscaler(
         tile_pad=tile_pad,
         pre_pad=pre_pad,
         half=half,
-        device=device
+        device=device,
     )
 
     return upscaler
 
 
-def run_upscale(
-    upscaler: RealESRGANer,
-    image: Image.Image,
-    outscale: float = 4.0
-) -> Image.Image:
+def run_upscale(upscaler: RealESRGANer, image: Image.Image, outscale: float = 4.0) -> Image.Image:
     """
     Run upscaling on a PIL Image with proper color space handling.
 
@@ -129,9 +125,9 @@ def run_upscale(
         Upscaled PIL Image
     """
     # Ensure RGB mode (prevent RGBA, L, P modes from causing issues)
-    if image.mode != 'RGB':
+    if image.mode != "RGB":
         print(f"   [!] Converting {image.mode} to RGB")
-        image = image.convert('RGB')
+        image = image.convert("RGB")
 
     # Convert PIL to numpy array
     img_np = np.array(image)

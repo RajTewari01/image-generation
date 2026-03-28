@@ -41,10 +41,7 @@ def load_controlnet(
 
     print(f"[+] Loading ControlNet: {model_path.stem}")
 
-    controlnet = ControlNetModel.from_single_file(
-        str(model_path),
-        torch_dtype=torch_dtype
-    )
+    controlnet = ControlNetModel.from_single_file(str(model_path), torch_dtype=torch_dtype)
 
     print(f"   [+] Loaded: {model_path.name}")
     return controlnet

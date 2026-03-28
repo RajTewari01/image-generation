@@ -93,21 +93,43 @@ def _detect_shot_type(prompt: str) -> ShotType:
     prompt_lower = prompt.lower()
 
     portrait_keywords = [
-        "close-up", "closeup", "portrait", "face", "glamour", "headshot",
-        "bust", "detailed face", "eyes"
+        "close-up",
+        "closeup",
+        "portrait",
+        "face",
+        "glamour",
+        "headshot",
+        "bust",
+        "detailed face",
+        "eyes",
     ]
-    action_keywords = [
-        "action", "running", "chasing", "fighting", "dynamic", "movement",
-        "attack", "jumping", "flying"
-    ]
+    action_keywords = ["action", "running", "chasing", "fighting", "dynamic", "movement", "attack", "jumping", "flying"]
     landscape_keywords = [
-        "panorama", "wide", "landscape", "vista", "distant", "horizon",
-        "sky", "cityscape", "establishing"
+        "panorama",
+        "wide",
+        "landscape",
+        "vista",
+        "distant",
+        "horizon",
+        "sky",
+        "cityscape",
+        "establishing",
     ]
     scene_keywords = [
-        "room", "hallway", "tunnel", "corridor", "mansion", "castle",
-        "graveyard", "cemetery", "forest", "ruins", "abandoned", "haunted",
-        "interior", "environment"
+        "room",
+        "hallway",
+        "tunnel",
+        "corridor",
+        "mansion",
+        "castle",
+        "graveyard",
+        "cemetery",
+        "forest",
+        "ruins",
+        "abandoned",
+        "haunted",
+        "interior",
+        "environment",
     ]
 
     # Score each type
@@ -129,22 +151,29 @@ def _detect_shot_type(prompt: str) -> ShotType:
 
 @register_pipeline(
     name="horror",
-    keywords=["horror", "scary", "dread", "vampire", "creepy", "terrifying",
-              "nightmare", "dark", "frightening", "ghastly", "unnerving"],
+    keywords=[
+        "horror",
+        "scary",
+        "dread",
+        "vampire",
+        "creepy",
+        "terrifying",
+        "nightmare",
+        "dark",
+        "frightening",
+        "ghastly",
+        "unnerving",
+    ],
     description="Dark horror and dread image generation with majicMIX Horror",
     types={
         "portrait": "Close-up glamour horror portrait",
         "character": "Full body horror character",
         "scene": "Environmental horror scene",
         "landscape": "Wide horror panorama",
-        "action": "Dynamic action horror shot"
-    }
+        "action": "Dynamic action horror shot",
+    },
 )
-def get_horror_config(
-        prompt: str,
-        shot_type: Optional[ShotType] = None,
-        auto_detect: bool = True
-) -> PipelineConfigs:
+def get_horror_config(prompt: str, shot_type: Optional[ShotType] = None, auto_detect: bool = True) -> PipelineConfigs:
     """
     Get Horror pipeline configuration.
 
@@ -210,21 +239,26 @@ def get_horror_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def horror_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """Close-up horror glamour portrait."""
     return get_horror_config(prompt, shot_type="portrait", **kwargs)
+
 
 def horror_character(prompt: str, **kwargs) -> PipelineConfigs:
     """Full body horror character."""
     return get_horror_config(prompt, shot_type="character", **kwargs)
 
+
 def horror_scene(prompt: str, **kwargs) -> PipelineConfigs:
     """Environmental horror scene."""
     return get_horror_config(prompt, shot_type="scene", **kwargs)
 
+
 def horror_landscape(prompt: str, **kwargs) -> PipelineConfigs:
     """Wide horror panorama."""
     return get_horror_config(prompt, shot_type="landscape", **kwargs)
+
 
 def horror_action(prompt: str, **kwargs) -> PipelineConfigs:
     """Dynamic action horror shot."""
@@ -242,7 +276,7 @@ if __name__ == "__main__":
     ]
 
     for (prompt,) in test_cases:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {prompt[:50]}...")
         config = get_horror_config(prompt)
         print(f"  Model: {config.base_model.name}")

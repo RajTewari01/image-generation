@@ -55,6 +55,7 @@ from typing import Dict, List, Optional
 # Path Resolution (No hardcoded paths)
 # ============================================================================
 
+
 def get_project_root() -> Path:
     """
     Dynamically find project root by looking for known markers.
@@ -65,9 +66,7 @@ def get_project_root() -> Path:
     # Walk up until we find project markers
     for parent in [current] + list(current.parents):
         # Check for project indicators
-        if (parent / "assets").exists() or \
-           (parent / "configs").exists() or \
-           (parent / "apps").exists():
+        if (parent / "assets").exists() or (parent / "configs").exists() or (parent / "apps").exists():
             return parent
 
     # Fallback: assume 4 levels up from this file
@@ -84,9 +83,11 @@ def get_prompts_dir() -> Path:
 # Data Classes
 # ============================================================================
 
+
 @dataclass
 class ModelStyle:
     """Learned style from a model's prompts."""
+
     model_id: int
     model_name: str = ""
     quality_boosters: List[str] = field(default_factory=list)
@@ -103,6 +104,7 @@ class ModelStyle:
 @dataclass
 class EnhancedPrompt:
     """Enhanced prompt with all generation settings."""
+
     prompt: str
     negative_prompt: str
     steps: int
@@ -117,6 +119,7 @@ class EnhancedPrompt:
 # ============================================================================
 # Prompt Enhancer
 # ============================================================================
+
 
 class PromptEnhancer:
     """
@@ -182,7 +185,7 @@ class PromptEnhancer:
     def _extract_model_id(self, model_path: Path) -> Optional[int]:
         """Extract model ID from filename."""
         name = model_path.stem if isinstance(model_path, Path) else str(model_path)
-        match = re.search(r'(\d{4,})', name)
+        match = re.search(r"(\d{4,})", name)
         if match:
             return int(match.group(1))
         return None
@@ -201,10 +204,10 @@ class PromptEnhancer:
             return None
 
         try:
-            with open(prompts_file, 'r', encoding='utf-8') as f:
+            with open(prompts_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            prompts = data.get('prompts', []) if isinstance(data, dict) else data
+            prompts = data.get("prompts", []) if isinstance(data, dict) else data
 
             if prompts:
                 style = self._analyze_prompts(model_id, prompts)
@@ -229,22 +232,32 @@ class PromptEnhancer:
         sizes = Counter()
 
         quality_patterns = [
-            'masterpiece', 'best quality', 'highly detailed',
-            'hyper realistic', '8k', '4k', 'epic composition',
-            'cinematic', 'atmospheric', 'sharp focus', 'professional',
-            'ultra detailed', 'photorealistic', 'intricate',
+            "masterpiece",
+            "best quality",
+            "highly detailed",
+            "hyper realistic",
+            "8k",
+            "4k",
+            "epic composition",
+            "cinematic",
+            "atmospheric",
+            "sharp focus",
+            "professional",
+            "ultra detailed",
+            "photorealistic",
+            "intricate",
         ]
 
         for p in prompts:
-            prompt_text = p.get('prompt', '')
-            negative_text = p.get('negative_prompt', '')
+            prompt_text = p.get("prompt", "")
+            negative_text = p.get("negative_prompt", "")
 
             # Extract LoRAs: <lora:name:weight>
-            for lora in re.findall(r'<lora:([^:>]+):[^>]+>', prompt_text):
+            for lora in re.findall(r"<lora:([^:>]+):[^>]+>", prompt_text):
                 lora_counter[lora] += 1
 
             # Extract LyCORIS: <lyco:name:weight>
-            for lyco in re.findall(r'<lyco:([^:>]+):[^>]+>', prompt_text):
+            for lyco in re.findall(r"<lyco:([^:>]+):[^>]+>", prompt_text):
                 lora_counter[f"lyco:{lyco}"] += 1
 
             # Extract quality boosters
@@ -254,20 +267,20 @@ class PromptEnhancer:
 
             # Extract negative prompt patterns
             if negative_text:
-                for word in negative_text.split(',')[:20]:
+                for word in negative_text.split(",")[:20]:
                     word = word.strip()
                     if word and len(word) > 2:
                         negative_counter[word] += 1
 
             # Collect settings
-            if p.get('steps'):
-                steps_list.append(p['steps'])
-            if p.get('cfg_scale'):
-                cfg_list.append(p['cfg_scale'])
-            if p.get('sampler'):
-                samplers[p['sampler']] += 1
-            if p.get('size'):
-                sizes[p['size']] += 1
+            if p.get("steps"):
+                steps_list.append(p["steps"])
+            if p.get("cfg_scale"):
+                cfg_list.append(p["cfg_scale"])
+            if p.get("sampler"):
+                samplers[p["sampler"]] += 1
+            if p.get("size"):
+                sizes[p["size"]] += 1
 
         # Build style from most common patterns
         style.quality_boosters = [k for k, _ in quality_counter.most_common(6)]
@@ -283,8 +296,8 @@ class PromptEnhancer:
             style.sampler = samplers.most_common(1)[0][0]
         if sizes:
             size_str = str(sizes.most_common(1)[0][0])
-            if 'x' in size_str:
-                w, h = size_str.split('x')
+            if "x" in size_str:
+                w, h = size_str.split("x")
                 style.width = int(w)
                 style.height = int(h)
 
@@ -313,14 +326,14 @@ class PromptEnhancer:
         # Add LoRAs if requested
         if include_loras and style.common_loras:
             for lora in style.common_loras[:2]:
-                if not lora.startswith('lyco:'):
+                if not lora.startswith("lyco:"):
                     parts.append(f"<lora:{lora}:0.5>")
                     loras_used.append(lora)
 
         # Combine and clean
         enhanced = ", ".join(parts)
-        enhanced = re.sub(r',\s*,', ',', enhanced)
-        enhanced = re.sub(r'\s+', ' ', enhanced).strip()
+        enhanced = re.sub(r",\s*,", ",", enhanced)
+        enhanced = re.sub(r"\s+", " ", enhanced).strip()
 
         # Use style's size if not overridden
         final_width = width if width != 512 else style.width
@@ -365,22 +378,24 @@ class PromptEnhancer:
         models = []
         if self.prompts_dir.exists():
             for f in self.prompts_dir.glob("model_*.json"):
-                match = re.search(r'model_(\d+)', f.name)
+                match = re.search(r"model_(\d+)", f.name)
                 if match:
                     model_id = int(match.group(1))
                     # Try to get prompt count
                     try:
-                        with open(f, 'r') as fp:
+                        with open(f, "r") as fp:
                             data = json.load(fp)
-                        count = len(data.get('prompts', []))
+                        count = len(data.get("prompts", []))
                     except:
                         count = 0
 
-                    models.append({
-                        'model_id': model_id,
-                        'file': f.name,
-                        'prompt_count': count,
-                    })
+                    models.append(
+                        {
+                            "model_id": model_id,
+                            "file": f.name,
+                            "prompt_count": count,
+                        }
+                    )
         return models
 
     def get_style_summary(self, model_id: int) -> str:
@@ -391,8 +406,8 @@ class PromptEnhancer:
 
         return f"""
 Model {model_id} Style:
-  Quality: {', '.join(style.quality_boosters[:4])}
-  LoRAs: {', '.join(style.common_loras[:3]) or 'None'}
+  Quality: {", ".join(style.quality_boosters[:4])}
+  LoRAs: {", ".join(style.common_loras[:3]) or "None"}
   Settings: {style.steps} steps, CFG {style.cfg_scale}, {style.sampler}
   Size: {style.width}x{style.height}
 """.strip()
@@ -413,11 +428,7 @@ def get_enhancer() -> PromptEnhancer:
     return _enhancer
 
 
-def enhance_prompt(
-    prompt: str,
-    model_id: Optional[int] = None,
-    **kwargs
-) -> EnhancedPrompt:
+def enhance_prompt(prompt: str, model_id: Optional[int] = None, **kwargs) -> EnhancedPrompt:
     """
     Quick function to enhance a prompt.
 

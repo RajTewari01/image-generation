@@ -34,10 +34,12 @@ class CivitAIClient:
 
     def __init__(self, api_key: str):
         self.session = requests.Session()
-        self.session.headers.update({
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json',
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+        )
 
     def get_model(self, model_id: int) -> dict:
         """Get model info including images."""
@@ -55,7 +57,7 @@ class CivitAIClient:
 
         response = self.session.get(url, params=params, timeout=120)
         response.raise_for_status()
-        return response.json().get('items', [])
+        return response.json().get("items", [])
 
     def get_image(self, image_id: int) -> dict:
         """Get single image details."""
@@ -67,7 +69,7 @@ class CivitAIClient:
 
 def extract_model_id(url: str) -> int:
     """Extract model ID from CivitAI URL."""
-    match = re.search(r'/models/(\d+)', url)
+    match = re.search(r"/models/(\d+)", url)
     if match:
         return int(match.group(1))
     return None
@@ -75,7 +77,7 @@ def extract_model_id(url: str) -> int:
 
 def extract_image_id(url: str) -> int:
     """Extract image ID from CivitAI URL."""
-    match = re.search(r'/images/(\d+)', url)
+    match = re.search(r"/images/(\d+)", url)
     if match:
         return int(match.group(1))
     return None
@@ -98,7 +100,7 @@ def scrape_model(client: CivitAIClient, model_id: int) -> list:
     prompts = []
 
     for img in images:
-        meta = img.get('meta')
+        meta = img.get("meta")
         if not meta:
             continue
 
@@ -107,25 +109,27 @@ def scrape_model(client: CivitAIClient, model_id: int) -> list:
             continue
 
         # CivitAI API sometimes nests meta inside meta
-        if 'meta' in meta and isinstance(meta.get('meta'), dict):
-            meta = meta.get('meta', {})
+        if "meta" in meta and isinstance(meta.get("meta"), dict):
+            meta = meta.get("meta", {})
 
-        prompt = meta.get('prompt')
+        prompt = meta.get("prompt")
 
         if prompt:
-            prompts.append({
-                'prompt': prompt,
-                'negative_prompt': meta.get('negativePrompt', ''),
-                'steps': meta.get('steps'),
-                'cfg_scale': meta.get('cfgScale'),
-                'sampler': meta.get('sampler'),
-                'seed': meta.get('seed'),
-                'size': f"{img.get('width')}x{img.get('height')}",
-                'reactions': img.get('stats', {}).get('heartCount', 0),
-            })
+            prompts.append(
+                {
+                    "prompt": prompt,
+                    "negative_prompt": meta.get("negativePrompt", ""),
+                    "steps": meta.get("steps"),
+                    "cfg_scale": meta.get("cfgScale"),
+                    "sampler": meta.get("sampler"),
+                    "seed": meta.get("seed"),
+                    "size": f"{img.get('width')}x{img.get('height')}",
+                    "reactions": img.get("stats", {}).get("heartCount", 0),
+                }
+            )
 
     # Sort by reactions
-    prompts.sort(key=lambda x: x.get('reactions', 0), reverse=True)
+    prompts.sort(key=lambda x: x.get("reactions", 0), reverse=True)
 
     print(f"Extracted {len(prompts)} prompts with metadata")
     return prompts
@@ -140,19 +144,21 @@ def main():
 
     for url in sys.argv[1:]:
         print(f"\nProcessing: {url}")
-        if '/images/' in url:
+        if "/images/" in url:
             # Single image
             image_id = extract_image_id(url)
             if image_id:
                 print(f"Fetching image {image_id}...")
                 try:
                     img = client.get_image(image_id)
-                    meta = img.get('meta') or {}
-                    if meta.get('prompt'):
+                    meta = img.get("meta") or {}
+                    if meta.get("prompt"):
                         print("\n=== PROMPT ===")
                         print(f"Prompt: {meta.get('prompt')}")
                         print(f"\nNegative: {meta.get('negativePrompt', '')}")
-                        print(f"\nSteps: {meta.get('steps')}, CFG: {meta.get('cfgScale')}, Sampler: {meta.get('sampler')}")
+                        print(
+                            f"\nSteps: {meta.get('steps')}, CFG: {meta.get('cfgScale')}, Sampler: {meta.get('sampler')}"
+                        )
                     else:
                         print("No prompt metadata (hidden by uploader)")
                 except Exception as e:
@@ -165,9 +171,9 @@ def main():
                     prompts = scrape_model(client, model_id)
 
                     if prompts:
-                        print("\n" + "="*60)
+                        print("\n" + "=" * 60)
                         print("TOP 5 PROMPTS (by reactions)")
-                        print("="*60)
+                        print("=" * 60)
 
                         for i, p in enumerate(prompts[:5], 1):
                             print(f"\n--- #{i} ({p.get('reactions', 0)} hearts) ---")
@@ -179,18 +185,24 @@ def main():
                         output = Path(__file__).parent.parent / "assets" / "prompts" / f"model_{model_id}_prompts.json"
                         output.parent.mkdir(parents=True, exist_ok=True)
 
-                        with open(output, 'w', encoding='utf-8') as f:
-                            json.dump({
-                                'model_id': model_id,
-                                'prompt_count': len(prompts),
-                                'prompts': prompts,
-                            }, f, indent=2, ensure_ascii=False)
+                        with open(output, "w", encoding="utf-8") as f:
+                            json.dump(
+                                {
+                                    "model_id": model_id,
+                                    "prompt_count": len(prompts),
+                                    "prompts": prompts,
+                                },
+                                f,
+                                indent=2,
+                                ensure_ascii=False,
+                            )
 
                         print(f"\n✓ Saved {len(prompts)} prompts to: {output}")
                     else:
                         print(f"No prompts found for model {model_id}")
                 except Exception as e:
                     print(f"Error processing model {model_id}: {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -55,11 +55,11 @@ def detect(image: Image.Image) -> Image.Image:
     if _detector is None:
         try:
             from controlnet_aux import MidasDetector
+
             _detector = MidasDetector.from_pretrained("lllyasviel/Annotators")
         except ImportError:
             raise ImportError(
-                "controlnet_aux is required for depth detection. "
-                "Install with: pip install controlnet_aux"
+                "controlnet_aux is required for depth detection. Install with: pip install controlnet_aux"
             )
 
     return _detector(image)

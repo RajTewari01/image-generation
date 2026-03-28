@@ -30,6 +30,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 @dataclass
 class ModelStyle:
     """Learned style from a model's prompts."""
+
     model_id: int
     model_name: str = ""
 
@@ -49,6 +50,7 @@ class ModelStyle:
 @dataclass
 class EnhancedPrompt:
     """Enhanced prompt with all settings."""
+
     prompt: str
     negative_prompt: str
     steps: int
@@ -90,12 +92,12 @@ class ModelPromptEnhancer:
 
     def _load_file(self, path: Path):
         """Load prompts from a specific file."""
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         if isinstance(data, dict):
-            self.prompts = data.get('prompts', [])
-            self.model_id = data.get('model_id', 0)
+            self.prompts = data.get("prompts", [])
+            self.model_id = data.get("model_id", 0)
         else:
             self.prompts = data
             self.model_id = 0
@@ -122,10 +124,10 @@ class ModelPromptEnhancer:
 
         for json_file in self.prompts_dir.glob("model_*.json"):
             try:
-                with open(json_file, 'r', encoding='utf-8') as f:
+                with open(json_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                if isinstance(data, dict) and 'prompts' in data:
-                    self.prompts.extend(data['prompts'])
+                if isinstance(data, dict) and "prompts" in data:
+                    self.prompts.extend(data["prompts"])
             except Exception as e:
                 print(f"Error loading {json_file}: {e}")
 
@@ -147,26 +149,37 @@ class ModelPromptEnhancer:
         sizes = Counter()
 
         for p in self.prompts:
-            prompt = p.get('prompt', '')
-            negative = p.get('negative_prompt', '')
+            prompt = p.get("prompt", "")
+            negative = p.get("negative_prompt", "")
 
             # Extract LoRAs: <lora:name:weight>
-            loras = re.findall(r'<lora:([^:>]+):[^>]+>', prompt)
+            loras = re.findall(r"<lora:([^:>]+):[^>]+>", prompt)
             for lora in loras:
                 all_loras[lora] += 1
 
             # Extract LyCORIS: <lyco:name:weight>
-            lycos = re.findall(r'<lyco:([^:>]+):[^>]+>', prompt)
+            lycos = re.findall(r"<lyco:([^:>]+):[^>]+>", prompt)
             for lyco in lycos:
                 all_loras[f"lyco:{lyco}"] += 1
 
             # Extract quality boosters (common patterns)
             quality_patterns = [
-                r'masterpiece', r'best quality', r'highly detailed',
-                r'hyper realistic', r'8k', r'4k', r'hd',
-                r'epic composition', r'cinematic', r'atmospheric',
-                r'sharp focus', r'professional', r'ultra detailed',
-                r'photorealistic', r'intricate', r'detailed',
+                r"masterpiece",
+                r"best quality",
+                r"highly detailed",
+                r"hyper realistic",
+                r"8k",
+                r"4k",
+                r"hd",
+                r"epic composition",
+                r"cinematic",
+                r"atmospheric",
+                r"sharp focus",
+                r"professional",
+                r"ultra detailed",
+                r"photorealistic",
+                r"intricate",
+                r"detailed",
             ]
             for pattern in quality_patterns:
                 if re.search(pattern, prompt, re.IGNORECASE):
@@ -174,26 +187,26 @@ class ModelPromptEnhancer:
 
             # Extract trigger words (capitalized or special format)
             # Words that appear frequently and aren't common English
-            words = re.findall(r'\b([A-Z][a-z]+[A-Z]\w*|\b\w+style\b)\b', prompt)
+            words = re.findall(r"\b([A-Z][a-z]+[A-Z]\w*|\b\w+style\b)\b", prompt)
             for word in words:
                 all_triggers[word] += 1
 
             # Negative prompt patterns
             if negative:
-                neg_words = [w.strip() for w in negative.split(',')]
+                neg_words = [w.strip() for w in negative.split(",")]
                 for w in neg_words[:10]:  # First 10 are usually important
                     if w and len(w) > 2:
                         all_negatives[w] += 1
 
             # Settings
-            if p.get('steps'):
-                steps_list.append(p['steps'])
-            if p.get('cfg_scale'):
-                cfg_list.append(p['cfg_scale'])
-            if p.get('sampler'):
-                samplers[p['sampler']] += 1
-            if p.get('size'):
-                sizes[p['size']] += 1
+            if p.get("steps"):
+                steps_list.append(p["steps"])
+            if p.get("cfg_scale"):
+                cfg_list.append(p["cfg_scale"])
+            if p.get("sampler"):
+                samplers[p["sampler"]] += 1
+            if p.get("size"):
+                sizes[p["size"]] += 1
 
         # Build style from most common patterns
         style.quality_boosters = [k for k, v in all_quality.most_common(8)]
@@ -214,8 +227,8 @@ class ModelPromptEnhancer:
         if sizes:
             # Parse "1024x1536" format
             size_str = sizes.most_common(1)[0][0]
-            if 'x' in str(size_str):
-                w, h = size_str.split('x')
+            if "x" in str(size_str):
+                w, h = size_str.split("x")
                 style.common_sizes = [(int(w), int(h))]
 
         return style
@@ -276,7 +289,7 @@ class ModelPromptEnhancer:
         # 4. Add common LoRAs (optional)
         if include_loras and s.common_loras:
             for lora in s.common_loras[:2]:
-                if not lora.startswith('lyco:'):
+                if not lora.startswith("lyco:"):
                     parts.append(f"<lora:{lora}:0.5>")
                     loras_used.append(lora)
 
@@ -284,8 +297,8 @@ class ModelPromptEnhancer:
         enhanced = ", ".join(parts)
 
         # Clean up
-        enhanced = re.sub(r',\s*,', ',', enhanced)
-        enhanced = re.sub(r'\s+', ' ', enhanced).strip()
+        enhanced = re.sub(r",\s*,", ",", enhanced)
+        enhanced = re.sub(r"\s+", " ", enhanced).strip()
 
         # Determine size
         if width and height:
@@ -326,8 +339,8 @@ class ModelPromptEnhancer:
         scored = []
 
         for p in self.prompts:
-            prompt_text = p.get('prompt', '').lower()
-            prompt_words = set(re.findall(r'\w+', prompt_text))
+            prompt_text = p.get("prompt", "").lower()
+            prompt_words = set(re.findall(r"\w+", prompt_text))
             matches = len(query_words & prompt_words)
 
             if matches > 0:
@@ -341,6 +354,7 @@ class ModelPromptEnhancer:
 # Convenience function
 # ============================================================================
 
+
 def enhance_for_model(prompt: str, model_id: int, **kwargs) -> EnhancedPrompt:
     """Quick enhance for a specific model."""
     enhancer = ModelPromptEnhancer(model_id=model_id)
@@ -350,6 +364,7 @@ def enhance_for_model(prompt: str, model_id: int, **kwargs) -> EnhancedPrompt:
 # ============================================================================
 # CLI
 # ============================================================================
+
 
 def main():
     import sys
@@ -366,7 +381,7 @@ def main():
         prompts_dir = Path(__file__).parent.parent / "assets" / "prompts"
         if prompts_dir.exists():
             for f in prompts_dir.glob("model_*.json"):
-                model_id = re.search(r'model_(\d+)', f.name)
+                model_id = re.search(r"model_(\d+)", f.name)
                 if model_id:
                     print(f"  - Model {model_id.group(1)}: {f.name}")
         return

@@ -36,12 +36,12 @@ MODEL_MAP = {
     "midjourney": {
         "file": PAPERCUT_DIR / "midjourneyPapercut_v1.ckpt",
         "trigger": "mdjrny-pprct",
-        "description": "Great for humans, dragons, layered origami art"
+        "description": "Great for humans, dragons, layered origami art",
     },
     "papercutcraft": {
         "file": PAPERCUT_DIR / "papercutcraft_v1.ckpt",
         "trigger": "Papercutcraft style",
-        "description": "Best for animals and creatures in origami style"
+        "description": "Best for animals and creatures in origami style",
     },
 }
 
@@ -60,22 +60,13 @@ ASPECT_RATIOS = {
 # =============================================================================
 
 # Midjourney papercut template - for humans/dragons/layered art
-MIDJOURNEY_TEMPLATE = (
-    "{trigger}, {prompt}, "
-    "masterpiece, best quality"
-)
+MIDJOURNEY_TEMPLATE = "{trigger}, {prompt}, masterpiece, best quality"
 
 # Papercutcraft template - for animals/creatures
-PAPERCUTCRAFT_TEMPLATE = (
-    "{trigger}, {prompt}, "
-    "masterpiece, best quality"
-)
+PAPERCUTCRAFT_TEMPLATE = "{trigger}, {prompt}, masterpiece, best quality"
 
 # Negative prompt for papercut art (from CivitAI)
-PAPERCUT_NEGATIVE = (
-    "(worst quality:1.2), (low quality:1.2), (normal quality:1.2), lowres, "
-    "(frame:1.2), border,blurry"
-)
+PAPERCUT_NEGATIVE = "(worst quality:1.2), (low quality:1.2), (normal quality:1.2), lowres, (frame:1.2), border,blurry"
 
 # Style types
 StyleType = Literal["midjourney", "papercutcraft"]
@@ -90,31 +81,77 @@ def _detect_style(prompt: str) -> StyleType:
     - papercutcraft: animals, creatures, birds, cats, dogs, etc.
     """
     import re
+
     prompt_lower = prompt.lower()
 
     # Human/dragon keywords with weights → midjourney
     midjourney_keywords = {
         # Strong human indicators (weight 2)
-        "girl": 2, "woman": 2, "man": 2, "boy": 2, "lady": 2,
-        "female": 2, "male": 2, "person": 2, "people": 2, "human": 2,
-        "sexy": 2, "beautiful": 1, "portrait": 2, "face": 2,
+        "girl": 2,
+        "woman": 2,
+        "man": 2,
+        "boy": 2,
+        "lady": 2,
+        "female": 2,
+        "male": 2,
+        "person": 2,
+        "people": 2,
+        "human": 2,
+        "sexy": 2,
+        "beautiful": 1,
+        "portrait": 2,
+        "face": 2,
         # Characters
-        "geisha": 2, "samurai": 2, "warrior": 2, "knight": 2,
-        "princess": 2, "queen": 2, "king": 2, "goddess": 2,
-        "angel": 2, "demon": 2, "fairy": 1, "elf": 1, "wizard": 1,
+        "geisha": 2,
+        "samurai": 2,
+        "warrior": 2,
+        "knight": 2,
+        "princess": 2,
+        "queen": 2,
+        "king": 2,
+        "goddess": 2,
+        "angel": 2,
+        "demon": 2,
+        "fairy": 1,
+        "elf": 1,
+        "wizard": 1,
         # Special
-        "dragon": 2, "dragons": 2, "layered": 1, "layer": 1,
-        "chinese": 1, "japanese": 1, "asian": 1,
+        "dragon": 2,
+        "dragons": 2,
+        "layered": 1,
+        "layer": 1,
+        "chinese": 1,
+        "japanese": 1,
+        "asian": 1,
     }
 
     # Animal keywords with weights → papercutcraft
     animal_keywords = {
-        "animal": 3, "bird": 2, "cat": 2, "dog": 2, "fox": 2,
-        "wolf": 2, "lion": 2, "tiger": 2, "elephant": 2,
-        "rabbit": 2, "butterfly": 2, "fish": 2, "horse": 2,
-        "deer": 2, "owl": 2, "eagle": 2, "swan": 2, "peacock": 2,
-        "snake": 2, "frog": 2, "bear": 2, "panda": 2, "koala": 2,
-        "creature": 1, "origami": 1,
+        "animal": 3,
+        "bird": 2,
+        "cat": 2,
+        "dog": 2,
+        "fox": 2,
+        "wolf": 2,
+        "lion": 2,
+        "tiger": 2,
+        "elephant": 2,
+        "rabbit": 2,
+        "butterfly": 2,
+        "fish": 2,
+        "horse": 2,
+        "deer": 2,
+        "owl": 2,
+        "eagle": 2,
+        "swan": 2,
+        "peacock": 2,
+        "snake": 2,
+        "frog": 2,
+        "bear": 2,
+        "panda": 2,
+        "koala": 2,
+        "creature": 1,
+        "origami": 1,
     }
 
     # Calculate scores using word boundaries
@@ -123,11 +160,11 @@ def _detect_style(prompt: str) -> StyleType:
 
     for keyword, weight in midjourney_keywords.items():
         # Use word boundary regex for accurate matching
-        if re.search(rf'\b{keyword}\b', prompt_lower):
+        if re.search(rf"\b{keyword}\b", prompt_lower):
             midjourney_score += weight
 
     for keyword, weight in animal_keywords.items():
-        if re.search(rf'\b{keyword}\b', prompt_lower):
+        if re.search(rf"\b{keyword}\b", prompt_lower):
             papercutcraft_score += weight
 
     # Return based on score
@@ -139,19 +176,25 @@ def _detect_style(prompt: str) -> StyleType:
 
 @register_pipeline(
     name="papercut",
-    keywords=["papercut", "origami", "kirigami", "paper art", "paper craft",
-              "scherenschnitte", "shadowbox", "silhouette", "layered paper"],
+    keywords=[
+        "papercut",
+        "origami",
+        "kirigami",
+        "paper art",
+        "paper craft",
+        "scherenschnitte",
+        "shadowbox",
+        "silhouette",
+        "layered paper",
+    ],
     description="Papercut and origami style art with specialized models",
     types={
         "midjourney": "Great for humans, dragons, layered origami art",
-        "papercutcraft": "Best for animals and creatures in origami style"
-    }
+        "papercutcraft": "Best for animals and creatures in origami style",
+    },
 )
 def get_papercut_config(
-        prompt: str,
-        style: Optional[StyleType] = None,
-        aspect: Optional[AspectType] = "mid",
-        auto_detect: bool = True
+    prompt: str, style: Optional[StyleType] = None, aspect: Optional[AspectType] = "mid", auto_detect: bool = True
 ) -> PipelineConfigs:
     """
     Get Papercut/Origami pipeline configuration.
@@ -202,11 +245,11 @@ def get_papercut_config(
         vae="realistic",  # ft_mse VAE works well
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
         embeddings=[],
-        scheduler_name= 'dpm++_sde_karras',  # Euler a - most common in CivitAI, faster
+        scheduler_name="dpm++_sde_karras",  # Euler a - most common in CivitAI, faster
         width=width,
         height=height,
         steps=25,  # From CivitAI (20-30 range)
-        cfg=7.5,   # From CivitAI (7-9.5 range)
+        cfg=7.5,  # From CivitAI (7-9.5 range)
         lora=[],
         c_net=[],
     )
@@ -216,21 +259,26 @@ def get_papercut_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def papercut_human(prompt: str, **kwargs) -> PipelineConfigs:
     """Layered papercut art of humans/people."""
     return get_papercut_config(prompt, style="midjourney", **kwargs)
+
 
 def papercut_dragon(prompt: str, **kwargs) -> PipelineConfigs:
     """Layered papercut art of dragons."""
     return get_papercut_config(prompt, style="midjourney", **kwargs)
 
+
 def papercut_animal(prompt: str, **kwargs) -> PipelineConfigs:
     """Origami style animals and creatures."""
     return get_papercut_config(prompt, style="papercutcraft", **kwargs)
 
+
 def papercut_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """Portrait aspect ratio papercut."""
     return get_papercut_config(prompt, aspect="portrait", **kwargs)
+
 
 def papercut_wide(prompt: str, **kwargs) -> PipelineConfigs:
     """Wide aspect ratio papercut panorama."""
@@ -248,7 +296,7 @@ if __name__ == "__main__":
     ]
 
     for (prompt,) in test_cases:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {prompt[:50]}...")
         config = get_papercut_config(prompt)
         print(f"  Model: {config.base_model.name}")

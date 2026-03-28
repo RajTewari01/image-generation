@@ -29,7 +29,7 @@ def register_pipeline(
     keywords: List[str],
     description: str = "",
     category: str = "image",
-    types: Optional[Dict[str, str]] = None
+    types: Optional[Dict[str, str]] = None,
 ):
     """
     Decorator to register a pipeline's get_config function.
@@ -51,6 +51,7 @@ def register_pipeline(
         def get_car_config(prompt, style=None, **kwargs):
             ...
     """
+
     def decorator(func: Callable):
         PIPELINE_REGISTRY[name] = {
             "get_config": func,
@@ -58,9 +59,10 @@ def register_pipeline(
             "description": description,
             "category": category,
             "name": name,
-            "types": types or {}
+            "types": types or {},
         }
         return func
+
     return decorator
 
 
@@ -122,12 +124,7 @@ def get_pipeline_types(name: str) -> Dict[str, str]:
 
 def format_help_text() -> str:
     """Format detailed help text showing all pipelines and their options."""
-    lines = [
-        "=" * 70,
-        "NEURAL CITADEL - Image Generation Pipelines",
-        "=" * 70,
-        ""
-    ]
+    lines = ["=" * 70, "NEURAL CITADEL - Image Generation Pipelines", "=" * 70, ""]
 
     for name, info in sorted(PIPELINE_REGISTRY.items()):
         lines.append(f"📦 {name.upper()}")

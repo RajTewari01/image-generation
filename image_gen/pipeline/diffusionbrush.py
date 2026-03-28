@@ -32,6 +32,7 @@ from image_gen.pipeline.registry import register_pipeline
 
 try:
     from ..tools import detect_aspect, enhance_prompt
+
     HAS_TOOLS = True
 except ImportError:
     HAS_TOOLS = False
@@ -42,9 +43,9 @@ MODEL_DIFFUSIONBRUSH = MODEL_DIFFUSIONBRUSH
 GENERATED_OUTPUT = IMAGE_GEN_OUTPUT_DIR / "diffusionbrush"
 
 ASPECT_RATIOS = {
-    "normal":    (512, 512),   # Square - objects, icons
-    "portrait":  (512, 768),   # Vertical - characters, people
-    "landscape": (768, 512),   # Horizontal - scenes, environments
+    "normal": (512, 512),  # Square - objects, icons
+    "portrait": (512, 768),  # Vertical - characters, people
+    "landscape": (768, 512),  # Horizontal - scenes, environments
 }
 
 # =============================================================================
@@ -95,8 +96,7 @@ MID_SHOT_NEGATIVE = (
 )
 
 WIDE_SHOT_NEGATIVE = (
-    f"{COMMON_NEGATIVE}, repetitive patterns, tiling artifacts, distorted perspective, "
-    "blurry horizon, empty space"
+    f"{COMMON_NEGATIVE}, repetitive patterns, tiling artifacts, distorted perspective, blurry horizon, empty space"
 )
 
 
@@ -109,14 +109,38 @@ def _detect_shot_type(prompt: str) -> Literal["close", "mid", "wide"]:
     prompt_lower = prompt.lower()
 
     close_keywords = [
-        "close-up", "closeup", "portrait", "face", "detailed",
-        "head", "bust", "solo", "single", "eyes", "macro"
+        "close-up",
+        "closeup",
+        "portrait",
+        "face",
+        "detailed",
+        "head",
+        "bust",
+        "solo",
+        "single",
+        "eyes",
+        "macro",
     ]
 
     wide_keywords = [
-        "wide", "panorama", "landscape", "scene", "environment",
-        "establishing", "distant", "silhouette", "hallway", "room",
-        "house", "mansion", "castle", "cemetery", "graveyard", "forest", "city", "ocean"
+        "wide",
+        "panorama",
+        "landscape",
+        "scene",
+        "environment",
+        "establishing",
+        "distant",
+        "silhouette",
+        "hallway",
+        "room",
+        "house",
+        "mansion",
+        "castle",
+        "cemetery",
+        "graveyard",
+        "forest",
+        "city",
+        "ocean",
     ]
 
     # Check keywords
@@ -133,18 +157,25 @@ def _detect_shot_type(prompt: str) -> Literal["close", "mid", "wide"]:
 
 @register_pipeline(
     name="diffusionbrush",
-    keywords=["diffusionbrush", "digital art", "painterly", "hyper realistic",
-              "cinematic", "epic composition", "concept art"],
+    keywords=[
+        "diffusionbrush",
+        "digital art",
+        "painterly",
+        "hyper realistic",
+        "cinematic",
+        "epic composition",
+        "concept art",
+    ],
     description="High-fidelity digital art with realistic textures and cinematic lighting",
-    types={}
+    types={},
 )
 def get_config(
-    prompt:str,
-    control_image:Optional[Path]=None,
-    control_type:Optional[Literal["canny","depth","openpose"]]=None,
-    aspect:Optional[Literal["normal","portrait","landscape"]]=None,
-    shot_type:Optional[Literal["close","mid","wide"]]=None,
-    use_enhancement:bool=True,
+    prompt: str,
+    control_image: Optional[Path] = None,
+    control_type: Optional[Literal["canny", "depth", "openpose"]] = None,
+    aspect: Optional[Literal["normal", "portrait", "landscape"]] = None,
+    shot_type: Optional[Literal["close", "mid", "wide"]] = None,
+    use_enhancement: bool = True,
 ) -> PipelineConfigs:
     """
     Get DiffusionBrush pipeline configuration.
@@ -190,7 +221,7 @@ def get_config(
         template = WIDE_SHOT_TEMPLATE
         negative = WIDE_SHOT_NEGATIVE
         trigger = "medium shot,mid-shot"
-    else: # shot_type == "mid"
+    else:  # shot_type == "mid"
         print("[DIFFUSIONBRUSH] Mode: MID-SHOT (figure + environment)")
         template = MID_SHOT_TEMPLATE
         negative = MID_SHOT_NEGATIVE
@@ -217,7 +248,7 @@ def get_config(
                 ControlNetConfig(
                     control_type=control_type,
                     image_path=control_image,
-                    scale=0.8  # Stronger control for brush style
+                    scale=0.8,  # Stronger control for brush style
                 )
             )
             print(f"   🎮 ControlNet: {control_type} enabled")
@@ -226,7 +257,8 @@ def get_config(
     try:
         if not GENERATED_OUTPUT.exists():
             GENERATED_OUTPUT.mkdir(parents=True, exist_ok=True)
-    except:pass
+    except:
+        pass
 
     # 8. Return config
     return PipelineConfigs(
@@ -236,14 +268,11 @@ def get_config(
         neg_prompt=negative,
         vae="realistic",  # Use realistic VAE
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-
-        scheduler_name="dpm++_2m_karras", # Optimized for painterly details
-
+        scheduler_name="dpm++_2m_karras",  # Optimized for painterly details
         width=width,
         height=height,
         steps=25,
         cfg=7.0,
-
         lora=[],
         c_net=controlnets,
     )
@@ -252,6 +281,7 @@ def get_config(
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def portrait_brush(prompt: str, **kwargs) -> PipelineConfigs:
     """Quick config for portrait digital art."""
@@ -265,12 +295,7 @@ def landscape_brush(prompt: str, **kwargs) -> PipelineConfigs:
 
 def brush_with_canny(prompt: str, reference_image: Path, **kwargs) -> PipelineConfigs:
     """DiffusionBrush config with Canny ControlNet from reference image."""
-    return get_config(
-        prompt,
-        control_image=reference_image,
-        control_type="canny",
-        **kwargs
-    )
+    return get_config(prompt, control_image=reference_image, control_type="canny", **kwargs)
 
 
 # =============================================================================
@@ -286,7 +311,7 @@ if __name__ == "__main__":
     ]
 
     for p in test_prompts:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {p[:50]}...")
         config = get_config(p)
         print(f"  Size: {config.width}x{config.height}")

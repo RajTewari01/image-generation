@@ -26,14 +26,17 @@ from image_gen.pipeline.registry import get_all_pipelines
 def find_last_image():
     """Find the most recent generated image."""
     generated_dir = PROJECT_ROOT / "assets" / "generated" / "images"
-    if not generated_dir.exists(): return None
+    if not generated_dir.exists():
+        return None
 
     # Get all PNGs excluding existing canny maps
     files = [f for f in generated_dir.rglob("*.png") if "_canny" not in f.name]
-    if not files: return None
+    if not files:
+        return None
 
     files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
     return files[0]
+
 
 def create_canny(image_path):
     """Create Canny edge map."""
@@ -47,6 +50,7 @@ def create_canny(image_path):
     canny_path = image_path.parent / f"{image_path.stem}_canny.png"
     cv2.imwrite(str(canny_path), edges)
     return canny_path
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -94,6 +98,7 @@ def main():
     print(f"✨ Saved to: {saved}")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

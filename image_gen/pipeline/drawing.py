@@ -80,11 +80,8 @@ MODEL_MAP = {
         "description": "Chinese Ink - Traditional Scroll Painting",
         "steps": 26,
         "cfg": 7.0,
-        "lora": {
-             "path": LORA_STYLE_DIR / "MoXinV1.safetensors",
-             "scale": 0.8
-        }
-    }
+        "lora": {"path": LORA_STYLE_DIR / "MoXinV1.safetensors", "scale": 0.8},
+    },
 }
 
 ModelType = Literal["rachel_walker", "matcha_pixiv", "pareidolia", "chinese_ink"]
@@ -95,9 +92,7 @@ ModelType = Literal["rachel_walker", "matcha_pixiv", "pareidolia", "chinese_ink"
 # =============================================================================
 
 DRAWING_TEMPLATE = (
-    "{trigger}, {enhancement}, {prompt}, "
-    "masterpiece, best quality, ultra detailed, 8k, "
-    "sharp focus, professional art"
+    "{trigger}, {enhancement}, {prompt}, masterpiece, best quality, ultra detailed, 8k, sharp focus, professional art"
 )
 
 DRAWING_NEGATIVE = (
@@ -114,9 +109,9 @@ DRAWING_NEGATIVE = (
 # =============================================================================
 
 ASPECT_RATIOS = {
-    "portrait": (512, 768),       # Standard portrait
-    "landscape": (768, 512),      # Standard landscape
-    "square": (512, 512),         # Square format
+    "portrait": (512, 768),  # Standard portrait
+    "landscape": (768, 512),  # Standard landscape
+    "square": (512, 512),  # Square format
 }
 
 AspectType = Literal["portrait", "landscape", "square"]
@@ -126,17 +121,21 @@ AspectType = Literal["portrait", "landscape", "square"]
 # DETECTION FUNCTIONS
 # =============================================================================
 
+
 def _detect_model(prompt: str) -> ModelType:
     """Detect best model based on prompt keywords."""
     prompt_lower = prompt.lower()
 
-    if re.search(r'\b(chinese|ink|scroll|brush|shuimo|wuchangshuo)\b', prompt_lower) or "scroll painting" in prompt_lower:
+    if (
+        re.search(r"\b(chinese|ink|scroll|brush|shuimo|wuchangshuo)\b", prompt_lower)
+        or "scroll painting" in prompt_lower
+    ):
         return "chinese_ink"
-    if re.search(r'\b(water|ink|paint|paper)\b', prompt_lower):
+    if re.search(r"\b(water|ink|paint|paper)\b", prompt_lower):
         return "rachel_walker"
-    if re.search(r'\b(anime|sketch|pixiv)\b', prompt_lower):
+    if re.search(r"\b(anime|sketch|pixiv)\b", prompt_lower):
         return "matcha_pixiv"
-    if re.search(r'\b(surreal|dream|abstract)\b', prompt_lower):
+    if re.search(r"\b(surreal|dream|abstract)\b", prompt_lower):
         return "pareidolia"
 
     return "rachel_walker"  # Default
@@ -163,17 +162,29 @@ def _detect_aspect(prompt: str, override: Optional[str] = None) -> tuple[str, in
 # MAIN CONFIG FUNCTION
 # =============================================================================
 
+
 @register_pipeline(
     name="drawing",
-    keywords=["drawing", "watercolor", "ink", "sketch", "chinese ink", "scroll painting",
-              "matcha", "pixiv", "pareidolia", "surreal", "rachel walker"],
+    keywords=[
+        "drawing",
+        "watercolor",
+        "ink",
+        "sketch",
+        "chinese ink",
+        "scroll painting",
+        "matcha",
+        "pixiv",
+        "pareidolia",
+        "surreal",
+        "rachel walker",
+    ],
     description="Artistic drawing and watercolor styles using specialized models",
     types={
         "rachel_walker": "Watercolor & ink style",
         "matcha_pixiv": "Anime sketch style from Pixiv",
         "pareidolia": "Surreal/abstract artistic style",
-        "chinese_ink": "Traditional Chinese scroll painting"
-    }
+        "chinese_ink": "Traditional Chinese scroll painting",
+    },
 )
 def get_drawing_config(
     prompt: str,
@@ -228,26 +239,20 @@ def get_drawing_config(
     loras: List[LoraConfig] = []
     if "lora" in selected:
         l_conf = selected["lora"]
-        loras.append(LoraConfig(
-            lora_path=l_conf["path"],
-            scale=l_conf["scale"]
-        ))
+        loras.append(LoraConfig(lora_path=l_conf["path"], scale=l_conf["scale"]))
 
     return PipelineConfigs(
         base_model=selected["file"],
         output_dir=output_dir,
         prompt=final_prompt,
         style_type="anime",  # Auto-selects R-ESRGAN 4x+ Anime6B
-
         scheduler_name=selected.get("scheduler", "euler_a"),
-
         neg_prompt=negative_prompt,
-
         width=width,
         height=height,
         steps=selected["steps"],
         cfg=selected["cfg"],
-        lora=loras
+        lora=loras,
     )
 
 
@@ -255,21 +260,26 @@ def get_drawing_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def draw_watercolor(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate watercolor art using Rachel Walker style."""
     return get_drawing_config(prompt, model_override="rachel_walker", **kwargs)
+
 
 def draw_sketch(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate anime-style sketch using Matcha Pixiv."""
     return get_drawing_config(prompt, model_override="matcha_pixiv", **kwargs)
 
+
 def draw_surreal(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate surreal art using Pareidolia."""
     return get_drawing_config(prompt, model_override="pareidolia", **kwargs)
 
+
 def draw_chinese(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate Chinese Ink Scroll painting."""
     return get_drawing_config(prompt, model_override="chinese_ink", **kwargs)
+
 
 def draw_random(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate with random drawing model."""

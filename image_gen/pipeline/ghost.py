@@ -31,6 +31,7 @@ from image_gen.pipeline.registry import register_pipeline
 # Try to import tools (optional enhancement)
 try:
     from ..tools import detect_aspect, enhance_prompt
+
     HAS_TOOLS = True
 except ImportError:
     HAS_TOOLS = False
@@ -49,9 +50,9 @@ GENERATED_GHOST = IMAGE_GEN_OUTPUT_DIR / "ghost"
 # =============================================================================
 
 ASPECT_RATIOS = {
-    "normal":    (512, 512),   # Square - objects, icons
-    "portrait":  (512, 768),   # Vertical - characters, people
-    "landscape": (768, 512),   # Horizontal - scenes, environments
+    "normal": (512, 512),  # Square - objects, icons
+    "portrait": (512, 768),  # Vertical - characters, people
+    "landscape": (768, 512),  # Horizontal - scenes, environments
 }
 
 
@@ -101,14 +102,14 @@ MID_SHOT_NEGATIVE = (
 )
 
 WIDE_SHOT_NEGATIVE = (
-    "(overlapping:1.4), (close-up:1.3), (detailed faces:1.2), "
-    "blur, cartoon, anime, low quality, bad anatomy"
+    "(overlapping:1.4), (close-up:1.3), (detailed faces:1.2), blur, cartoon, anime, low quality, bad anatomy"
 )
 
 
 # =============================================================================
 # SHOT TYPE DETECTION
 # =============================================================================
+
 
 def _detect_shot_type(prompt: str) -> Literal["close", "mid", "wide"]:
     """
@@ -118,15 +119,24 @@ def _detect_shot_type(prompt: str) -> Literal["close", "mid", "wide"]:
     """
     prompt_lower = prompt.lower()
 
-    close_keywords = [
-        "close-up", "closeup", "portrait", "face", "detailed",
-        "head", "bust", "solo", "single", "eyes"
-    ]
+    close_keywords = ["close-up", "closeup", "portrait", "face", "detailed", "head", "bust", "solo", "single", "eyes"]
 
     wide_keywords = [
-        "wide", "panorama", "landscape", "scene", "environment",
-        "establishing", "distant", "silhouette", "hallway", "room",
-        "house", "mansion", "castle", "cemetery", "graveyard"
+        "wide",
+        "panorama",
+        "landscape",
+        "scene",
+        "environment",
+        "establishing",
+        "distant",
+        "silhouette",
+        "hallway",
+        "room",
+        "house",
+        "mansion",
+        "castle",
+        "cemetery",
+        "graveyard",
     ]
 
     # Check keywords
@@ -145,12 +155,23 @@ def _detect_shot_type(prompt: str) -> Literal["close", "mid", "wide"]:
 # MAIN CONFIG FUNCTION
 # =============================================================================
 
+
 @register_pipeline(
     name="ghost",
-    keywords=["ghost", "spirit", "ethereal", "haunted", "spectral", "ghostly",
-              "translucent", "paranormal", "apparition", "phantom"],
+    keywords=[
+        "ghost",
+        "spirit",
+        "ethereal",
+        "haunted",
+        "spectral",
+        "ghostly",
+        "translucent",
+        "paranormal",
+        "apparition",
+        "phantom",
+    ],
     description="Realistic ghost and spirit image generation with GhostMix model",
-    types={}
+    types={},
 )
 def get_config(
     prompt: str,
@@ -206,7 +227,7 @@ def get_config(
         template = WIDE_SHOT_TEMPLATE
         negative = WIDE_SHOT_NEGATIVE
         trigger = "haunted scene"
-    else: # shot_type == "mid"
+    else:  # shot_type == "mid"
         print("[GHOST] Mode: MID-SHOT (figure + environment)")
         template = MID_SHOT_TEMPLATE
         negative = MID_SHOT_NEGATIVE
@@ -233,7 +254,7 @@ def get_config(
                 ControlNetConfig(
                     control_type=control_type,
                     image_path=control_image,
-                    scale=0.7  # Moderate control for ghostly effects
+                    scale=0.7,  # Moderate control for ghostly effects
                 )
             )
             print(f"   🎮 ControlNet: {control_type} enabled")
@@ -249,14 +270,11 @@ def get_config(
         neg_prompt=negative,
         vae="realistic",  # Use realistic VAE for ghost details
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-
         scheduler_name="euler_a",
-
         width=width,
         height=height,
         steps=30,
         cfg=7.0,
-
         lora=[],  # No LoRAs by default
         c_net=controlnets,
     )
@@ -265,6 +283,7 @@ def get_config(
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def portrait_ghost(prompt: str, **kwargs) -> PipelineConfigs:
     """Quick config for portrait ghost shot."""
@@ -278,12 +297,7 @@ def scene_ghost(prompt: str, **kwargs) -> PipelineConfigs:
 
 def ghost_with_canny(prompt: str, reference_image: Path, **kwargs) -> PipelineConfigs:
     """Ghost config with Canny ControlNet from reference image."""
-    return get_config(
-        prompt,
-        control_image=reference_image,
-        control_type="canny",
-        **kwargs
-    )
+    return get_config(prompt, control_image=reference_image, control_type="canny", **kwargs)
 
 
 # =============================================================================
@@ -299,7 +313,7 @@ if __name__ == "__main__":
     ]
 
     for p in test_prompts:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {p[:50]}...")
         config = get_config(p)
         print(f"  Size: {config.width}x{config.height}")

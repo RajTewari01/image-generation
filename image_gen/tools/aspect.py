@@ -21,44 +21,109 @@ from typing import Literal, Tuple
 
 # Aspect ratio dimensions
 ASPECT_RATIOS = {
-    "normal":    (512, 512),   # 1:1 - Square
-    "portrait":  (512, 768),   # 2:3 - Vertical
-    "landscape": (768, 512),   # 3:2 - Horizontal
+    "normal": (512, 512),  # 1:1 - Square
+    "portrait": (512, 768),  # 2:3 - Vertical
+    "landscape": (768, 512),  # 3:2 - Horizontal
 }
 
 # Keywords that suggest portrait orientation (tall/vertical)
 PORTRAIT_KEYWORDS = [
     # People/Characters
-    "portrait", "person", "woman", "man", "girl", "boy", "face", "character",
-    "standing", "full body", "fullbody", "full-body", "figure", "model",
-    "selfie", "headshot", "bust", "torso", "solo",
-
+    "portrait",
+    "person",
+    "woman",
+    "man",
+    "girl",
+    "boy",
+    "face",
+    "character",
+    "standing",
+    "full body",
+    "fullbody",
+    "full-body",
+    "figure",
+    "model",
+    "selfie",
+    "headshot",
+    "bust",
+    "torso",
+    "solo",
     # Vertical compositions
-    "tall", "vertical", "tower", "skyscraper", "building", "tree",
-    "waterfall", "cliff", "lighthouse", "rocket", "sword", "staff",
-
+    "tall",
+    "vertical",
+    "tower",
+    "skyscraper",
+    "building",
+    "tree",
+    "waterfall",
+    "cliff",
+    "lighthouse",
+    "rocket",
+    "sword",
+    "staff",
     # Photography terms
-    "close-up", "closeup", "close up", "upper body", "upper-body",
-    "half body", "half-body", "cowboy shot", "medium shot",
+    "close-up",
+    "closeup",
+    "close up",
+    "upper body",
+    "upper-body",
+    "half body",
+    "half-body",
+    "cowboy shot",
+    "medium shot",
 ]
 
 # Keywords that suggest landscape orientation (wide/horizontal)
 LANDSCAPE_KEYWORDS = [
     # Environments
-    "landscape", "panorama", "panoramic", "wide shot", "wideshot", "wide-shot",
-    "horizon", "skyline", "cityscape", "seascape", "mountainscape",
-
+    "landscape",
+    "panorama",
+    "panoramic",
+    "wide shot",
+    "wideshot",
+    "wide-shot",
+    "horizon",
+    "skyline",
+    "cityscape",
+    "seascape",
+    "mountainscape",
     # Scenes
-    "scene", "environment", "background", "vista", "view", "scenery",
-    "field", "ocean", "sea", "beach", "desert", "plains", "valley",
-
+    "scene",
+    "environment",
+    "background",
+    "vista",
+    "view",
+    "scenery",
+    "field",
+    "ocean",
+    "sea",
+    "beach",
+    "desert",
+    "plains",
+    "valley",
     # Wide compositions
-    "wide", "horizontal", "banner", "cinematic", "establishing shot",
-    "aerial", "birds eye", "bird's eye", "overhead", "drone",
-    "room", "interior", "exterior", "architecture",
-
+    "wide",
+    "horizontal",
+    "banner",
+    "cinematic",
+    "establishing shot",
+    "aerial",
+    "birds eye",
+    "bird's eye",
+    "overhead",
+    "drone",
+    "room",
+    "interior",
+    "exterior",
+    "architecture",
     # Multiple subjects
-    "group", "crowd", "army", "horde", "battle", "war", "many",
+    "group",
+    "crowd",
+    "army",
+    "horde",
+    "battle",
+    "war",
+    "many",
 ]
 
 
@@ -161,7 +226,7 @@ def analyze_prompt(prompt: str) -> dict:
         "detected_keywords": {
             "portrait": [kw for kw in PORTRAIT_KEYWORDS if kw in prompt_lower],
             "landscape": [kw for kw in LANDSCAPE_KEYWORDS if kw in prompt_lower],
-        }
+        },
     }
 
 

@@ -40,7 +40,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["anime"],
         "steps": 25,
         "cfg": 7.0,
-        "description": "Best general-purpose anime model"
+        "description": "Best general-purpose anime model",
     },
     "novaporn": {
         "file": DIFFUSION_MODELS["novaporn"],
@@ -48,7 +48,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["anime"],
         "steps": 25,
         "cfg": 7.5,
-        "description": "High quality anime with photo-like quality"
+        "description": "High quality anime with photo-like quality",
     },
     "bloodorangemix": {
         "file": DIFFUSION_MODELS["bloodorangemix"],
@@ -56,7 +56,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["orangemix"],
         "steps": 25,
         "cfg": 6.5,
-        "description": "Vivid hardcore anime style"
+        "description": "Vivid hardcore anime style",
     },
     "abyssorangemix": {
         "file": DIFFUSION_MODELS["abyssorangemix"],
@@ -64,7 +64,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["orangemix"],
         "steps": 25,
         "cfg": 7.0,
-        "description": "Deep vivid colors, hard style"
+        "description": "Deep vivid colors, hard style",
     },
     "eerieorangemix": {
         "file": DIFFUSION_MODELS["eerieorangemix_hard"],
@@ -72,7 +72,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["orangemix"],
         "steps": 25,
         "cfg": 6.0,
-        "description": "Eerie/horror anime style"
+        "description": "Eerie/horror anime style",
     },
     "eerieorangemix_nsfw": {
         "file": DIFFUSION_MODELS["eerieorangemix_nsfw"],
@@ -80,7 +80,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["orangemix"],
         "steps": 25,
         "cfg": 6.5,
-        "description": "NSFW eerie anime style"
+        "description": "NSFW eerie anime style",
     },
     "azovya": {
         "file": DIFFUSION_MODELS["azovya_rpg"],
@@ -88,7 +88,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["anime"],
         "steps": 25,
         "cfg": 7.0,
-        "description": "RPG/fantasy anime art style"
+        "description": "RPG/fantasy anime art style",
     },
     "shiny_sissy": {
         "file": DIFFUSION_MODELS["shiny_sissy"],
@@ -96,7 +96,7 @@ MODEL_MAP = {
         "vae": VAE_MODELS["anime"],
         "steps": 25,
         "cfg": 7.0,
-        "description": "Latex/shiny style anime"
+        "description": "Latex/shiny style anime",
     },
 }
 
@@ -125,8 +125,14 @@ ANIME_NEGATIVE = (
 )
 # Model type
 ModelType = Literal[
-    "meinamix", "novaporn", "bloodorangemix", "abyssorangemix",
-    "eerieorangemix", "eerieorangemix_nsfw", "azovya", "shiny_sissy"
+    "meinamix",
+    "novaporn",
+    "bloodorangemix",
+    "abyssorangemix",
+    "eerieorangemix",
+    "eerieorangemix_nsfw",
+    "azovya",
+    "shiny_sissy",
 ]
 AspectType = Literal["portrait", "landscape", "square"]
 
@@ -134,6 +140,7 @@ AspectType = Literal["portrait", "landscape", "square"]
 # =============================================================================
 # DETECTION FUNCTIONS
 # =============================================================================
+
 
 def _detect_model(prompt: str) -> ModelType:
     """
@@ -150,8 +157,12 @@ def _detect_model(prompt: str) -> ModelType:
     # General anime models (for random selection when no keywords match)
     # NOTE: novaporn and shiny_sissy excluded - only via explicit keywords
     GENERAL_ANIME_MODELS = [
-        "meinamix", "bloodorangemix", "abyssorangemix",
-        "eerieorangemix", "eerieorangemix_nsfw", "azovya"
+        "meinamix",
+        "bloodorangemix",
+        "abyssorangemix",
+        "eerieorangemix",
+        "eerieorangemix_nsfw",
+        "azovya",
     ]
 
     # Specialty models that should ONLY be selected via keywords (not random)
@@ -159,11 +170,21 @@ def _detect_model(prompt: str) -> ModelType:
     # Model keywords with weights
     model_keywords = {
         "meinamix": {
-            "meina": 5, "cute": 2, "kawaii": 2, "moe": 2,
-            "school": 1, "uniform": 1, "idol": 2, "magical girl": 2
+            "meina": 5,
+            "cute": 2,
+            "kawaii": 2,
+            "moe": 2,
+            "school": 1,
+            "uniform": 1,
+            "idol": 2,
+            "magical girl": 2,
         },
         "novaporn": {
-            "detailed": 1, "porn": 5, "semi realistic": 2, "naked": 5, "pussy": 5,
+            "detailed": 1,
+            "porn": 5,
+            "semi realistic": 2,
+            "naked": 5,
+            "pussy": 5,
         },
         "bloodorangemix": {
             "blood": 3,
@@ -172,18 +193,15 @@ def _detect_model(prompt: str) -> ModelType:
             "abyss": 5,
         },
         "eerieorangemix": {
-            "eerie": 5, "horror": 3,
+            "eerie": 5,
+            "horror": 3,
         },
-        "eerieorangemix_nsfw": {
-            "eerie nsfw": 5, "horror nsfw": 4, "creepy nsfw": 4, "horror": 5, "ghostly naked": 5
-        },
+        "eerieorangemix_nsfw": {"eerie nsfw": 5, "horror nsfw": 4, "creepy nsfw": 4, "horror": 5, "ghostly naked": 5},
         "azovya": {
-            "rpg": 3, "fantasy": 3,
+            "rpg": 3,
+            "fantasy": 3,
         },
-        "shiny_sissy": {
-            "latex": 5, "shiny": 3, "sissy": 6, "pvc": 3,
-            "rubber": 3, "glossy": 2, "doll": 2, "femboy": 5
-        },
+        "shiny_sissy": {"latex": 5, "shiny": 3, "sissy": 6, "pvc": 3, "rubber": 3, "glossy": 2, "doll": 2, "femboy": 5},
     }
 
     # Calculate scores
@@ -191,7 +209,7 @@ def _detect_model(prompt: str) -> ModelType:
 
     for model, keywords in model_keywords.items():
         for keyword, weight in keywords.items():
-            if re.search(rf'\b{re.escape(keyword)}\b', prompt_lower):
+            if re.search(rf"\b{re.escape(keyword)}\b", prompt_lower):
                 scores[model] += weight
 
     # Get best model by score
@@ -216,28 +234,41 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
 
     # Portrait keywords (taller than wide)
     portrait_keywords = [
-        "portrait", "full body", "fullbody", "standing", "tall",
-        "vertical", "phone wallpaper", "1girl", "1boy", "solo"
+        "portrait",
+        "full body",
+        "fullbody",
+        "standing",
+        "tall",
+        "vertical",
+        "phone wallpaper",
+        "1girl",
+        "1boy",
+        "solo",
     ]
 
     # Landscape keywords (wider than tall)
     landscape_keywords = [
-        "landscape", "wide", "panorama", "scenery", "background",
-        "environment", "horizontal", "desktop wallpaper", "scene"
+        "landscape",
+        "wide",
+        "panorama",
+        "scenery",
+        "background",
+        "environment",
+        "horizontal",
+        "desktop wallpaper",
+        "scene",
     ]
 
     # Square keywords
-    square_keywords = [
-        "square", "profile", "icon", "avatar", "headshot", "face"
-    ]
+    square_keywords = ["square", "profile", "icon", "avatar", "headshot", "face"]
 
     # Check for explicit aspect ratio mentions
     # 4GB VRAM safe sizes (max 768 on any side)
-    if re.search(r'\b(16:9|widescreen|cinema)\b', prompt_lower):
+    if re.search(r"\b(16:9|widescreen|cinema)\b", prompt_lower):
         return ("landscape", 768, 432)
-    if re.search(r'\b(9:16|vertical|phone)\b', prompt_lower):
+    if re.search(r"\b(9:16|vertical|phone)\b", prompt_lower):
         return ("portrait", 432, 768)
-    if re.search(r'\b(1:1|square)\b', prompt_lower):
+    if re.search(r"\b(1:1|square)\b", prompt_lower):
         return ("square", 512, 512)
 
     # Score-based detection
@@ -258,10 +289,24 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
 # MAIN CONFIG FUNCTION
 # =============================================================================
 
+
 @register_pipeline(
     name="anime",
-    keywords=["anime", "kawaii", "moe", "meina", "novaporn", "bloodorangemix", "abyssorangemix",
-              "eerie anime", "rpg", "fantasy", "azovya", "latex", "shiny sissy"],
+    keywords=[
+        "anime",
+        "kawaii",
+        "moe",
+        "meina",
+        "novaporn",
+        "bloodorangemix",
+        "abyssorangemix",
+        "eerie anime",
+        "rpg",
+        "fantasy",
+        "azovya",
+        "latex",
+        "shiny sissy",
+    ],
     description="Multi-model anime generation with intelligent model selection",
     types={
         "meinamix": "Best for general anime (cute, kawaii)",
@@ -270,17 +315,17 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
         "abyssorangemix": "Deep vivid colors, hard style",
         "eerieorangemix": "Eerie/horror anime style",
         "azovya": "RPG/fantasy anime art style",
-        "shiny_sissy": "Latex/shiny style anime"
-    }
+        "shiny_sissy": "Latex/shiny style anime",
+    },
 )
 def get_anime_config(
-        prompt: str,
-        model: Optional[ModelType] = None,
-        aspect: Optional[AspectType] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        auto_detect: bool = True,
-        random_model: bool = False
+    prompt: str,
+    model: Optional[ModelType] = None,
+    aspect: Optional[AspectType] = None,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    auto_detect: bool = True,
+    random_model: bool = False,
 ) -> PipelineConfigs:
     """
     Get Anime pipeline configuration.
@@ -319,11 +364,7 @@ def get_anime_config(
     if width is None or height is None:
         if aspect is not None:
             # 4GB VRAM safe sizes
-            aspect_map = {
-                "portrait": (512, 768),
-                "landscape": (768, 512),
-                "square": (512, 512)
-            }
+            aspect_map = {"portrait": (512, 768), "landscape": (768, 512), "square": (512, 512)}
             width, height = aspect_map.get(aspect, (512, 768))
         else:
             # Auto-detect aspect
@@ -335,10 +376,7 @@ def get_anime_config(
     trigger_prefix = f"({trigger}:1.2), " if trigger else ""
 
     # Build final prompt
-    final_prompt = ANIME_TEMPLATE.format(
-        trigger=trigger_prefix,
-        prompt=prompt
-    )
+    final_prompt = ANIME_TEMPLATE.format(trigger=trigger_prefix, prompt=prompt)
 
     # Output directory
     output_dir = IMAGE_GEN_OUTPUT_DIR / "anime" / model
@@ -350,12 +388,9 @@ def get_anime_config(
         prompt=final_prompt,
         vae=selected.get("vae"),
         style_type="anime",  # Auto-selects R-ESRGAN 4x+ Anime6B
-
         scheduler_name="dpm++_2m_karras",  # Best for anime
-
         triggers=trigger if trigger else None,
         neg_prompt=ANIME_NEGATIVE,
-
         width=width,
         height=height,
         steps=selected["steps"],
@@ -367,6 +402,7 @@ def get_anime_config(
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def anime_cute(prompt: str, **kwargs) -> PipelineConfigs:
     """Cute kawaii anime style with MeinaMix."""

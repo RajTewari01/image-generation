@@ -109,7 +109,7 @@ def save_image_record(
     loras: Optional[List[Dict]] = None,
     controlnets: Optional[List[Dict]] = None,
     canny_image_path: Optional[Path] = None,
-    tags: Optional[str] = None
+    tags: Optional[str] = None,
 ) -> int:
     """
     Save a generated image record to database.
@@ -122,7 +122,8 @@ def save_image_record(
     conn = _get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO generated_images (
             image_path, canny_image_path, base_model, output_dir,
             prompt, neg_prompt, triggers,
@@ -130,27 +131,29 @@ def save_image_record(
             vae, scheduler_name, upscale_method,
             loras, controlnets, tags
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        str(image_path),
-        str(canny_image_path) if canny_image_path else None,
-        str(base_model),
-        str(output_dir),
-        prompt,
-        neg_prompt,
-        triggers,
-        width,
-        height,
-        steps,
-        cfg,
-        seed,
-        clip_skip,
-        vae,
-        scheduler_name,
-        upscale_method,
-        json.dumps(loras) if loras else None,
-        json.dumps(controlnets) if controlnets else None,
-        tags
-    ))
+    """,
+        (
+            str(image_path),
+            str(canny_image_path) if canny_image_path else None,
+            str(base_model),
+            str(output_dir),
+            prompt,
+            neg_prompt,
+            triggers,
+            width,
+            height,
+            steps,
+            cfg,
+            seed,
+            clip_skip,
+            vae,
+            scheduler_name,
+            upscale_method,
+            json.dumps(loras) if loras else None,
+            json.dumps(controlnets) if controlnets else None,
+            tags,
+        ),
+    )
 
     record_id = cursor.lastrowid
     conn.commit()
@@ -165,10 +168,7 @@ def get_image_by_path(image_path: str) -> Optional[Dict]:
     conn = _get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT * FROM generated_images WHERE image_path = ?",
-        (str(image_path),)
-    )
+    cursor.execute("SELECT * FROM generated_images WHERE image_path = ?", (str(image_path),))
     row = cursor.fetchone()
     conn.close()
 
@@ -181,8 +181,7 @@ def search_images_by_prompt(keyword: str, limit: int = 50) -> List[Dict]:
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT * FROM generated_images WHERE prompt LIKE ? ORDER BY created_at DESC LIMIT ?",
-        (f"%{keyword}%", limit)
+        "SELECT * FROM generated_images WHERE prompt LIKE ? ORDER BY created_at DESC LIMIT ?", (f"%{keyword}%", limit)
     )
     rows = cursor.fetchall()
     conn.close()
@@ -195,10 +194,7 @@ def get_recent_images(limit: int = 20) -> List[Dict]:
     conn = _get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT * FROM generated_images ORDER BY created_at DESC LIMIT ?",
-        (limit,)
-    )
+    cursor.execute("SELECT * FROM generated_images ORDER BY created_at DESC LIMIT ?", (limit,))
     rows = cursor.fetchall()
     conn.close()
 
@@ -212,7 +208,7 @@ def get_images_by_model(model_path: str, limit: int = 50) -> List[Dict]:
 
     cursor.execute(
         "SELECT * FROM generated_images WHERE base_model LIKE ? ORDER BY created_at DESC LIMIT ?",
-        (f"%{model_path}%", limit)
+        (f"%{model_path}%", limit),
     )
     rows = cursor.fetchall()
     conn.close()
@@ -225,10 +221,7 @@ def delete_image_record(image_path: str) -> bool:
     conn = _get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "DELETE FROM generated_images WHERE image_path = ?",
-        (str(image_path),)
-    )
+    cursor.execute("DELETE FROM generated_images WHERE image_path = ?", (str(image_path),))
 
     deleted = cursor.rowcount > 0
     conn.commit()

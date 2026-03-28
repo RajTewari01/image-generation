@@ -59,11 +59,11 @@ SPACE_NEGATIVE = (
 # =============================================================================
 
 ASPECT_RATIOS = {
-    "landscape": (768, 512),      # 3:2 - Standard landscape
-    "wide": (768, 432),           # 16:9 - Cinematic wide
-    "ultrawide": (768, 384),      # 2:1 - Ultra wide panorama
-    "square": (512, 512),         # 1:1 - Social media
-    "portrait": (512, 768),       # 2:3 - Vertical (rare for space)
+    "landscape": (768, 512),  # 3:2 - Standard landscape
+    "wide": (768, 432),  # 16:9 - Cinematic wide
+    "ultrawide": (768, 384),  # 2:1 - Ultra wide panorama
+    "square": (512, 512),  # 1:1 - Social media
+    "portrait": (512, 768),  # 2:3 - Vertical (rare for space)
 }
 
 AspectType = Literal["landscape", "wide", "ultrawide", "square", "portrait"]
@@ -72,6 +72,7 @@ AspectType = Literal["landscape", "wide", "ultrawide", "square", "portrait"]
 # =============================================================================
 # SCENE TYPE DETECTION
 # =============================================================================
+
 
 def _detect_scene_type(prompt: str) -> str:
     """
@@ -112,15 +113,15 @@ def _detect_aspect(prompt: str) -> tuple[str, int, int]:
     prompt_lower = prompt.lower()
 
     # Explicit aspect mentions
-    if re.search(r'\b(ultrawide|anamorphic|2\.4:1|cinematic)\b', prompt_lower):
+    if re.search(r"\b(ultrawide|anamorphic|2\.4:1|cinematic)\b", prompt_lower):
         return ("ultrawide", *ASPECT_RATIOS["ultrawide"])
-    if re.search(r'\b(wide|panorama|2:1)\b', prompt_lower):
+    if re.search(r"\b(wide|panorama|2:1)\b", prompt_lower):
         return ("wide", *ASPECT_RATIOS["wide"])
-    if re.search(r'\b(16:9|landscape|desktop)\b', prompt_lower):
+    if re.search(r"\b(16:9|landscape|desktop)\b", prompt_lower):
         return ("landscape", *ASPECT_RATIOS["landscape"])
-    if re.search(r'\b(square|1:1|instagram)\b', prompt_lower):
+    if re.search(r"\b(square|1:1|instagram)\b", prompt_lower):
         return ("square", *ASPECT_RATIOS["square"])
-    if re.search(r'\b(portrait|vertical|phone|9:16)\b', prompt_lower):
+    if re.search(r"\b(portrait|vertical|phone|9:16)\b", prompt_lower):
         return ("portrait", *ASPECT_RATIOS["portrait"])
 
     # Default to wide for space (most epic look)
@@ -149,19 +150,32 @@ SCENE_ENHANCEMENTS = {
 # MAIN CONFIG FUNCTION
 # =============================================================================
 
+
 @register_pipeline(
     name="space",
-    keywords=["space", "galaxy", "nebula", "planet", "spaceship", "sci-fi", "cosmic",
-              "stars", "astronaut", "black hole", "orbital", "alien world"],
+    keywords=[
+        "space",
+        "galaxy",
+        "nebula",
+        "planet",
+        "spaceship",
+        "sci-fi",
+        "cosmic",
+        "stars",
+        "astronaut",
+        "black hole",
+        "orbital",
+        "alien world",
+    ],
     description="Deep space and cosmic scene generation with cinematic quality",
-    types={}
+    types={},
 )
 def get_space_config(
-        prompt: str,
-        aspect: Optional[AspectType] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        enhance_scene: bool = True,
+    prompt: str,
+    aspect: Optional[AspectType] = None,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    enhance_scene: bool = True,
 ) -> PipelineConfigs:
     """
     Get Space/Sci-Fi pipeline configuration.
@@ -193,9 +207,7 @@ def get_space_config(
     # Build enhanced prompt
     enhancement = SCENE_ENHANCEMENTS.get(scene_type, "") if enhance_scene else ""
 
-    final_prompt = SPACE_TEMPLATE.format(
-        prompt=f"{enhancement}{prompt}"
-    )
+    final_prompt = SPACE_TEMPLATE.format(prompt=f"{enhancement}{prompt}")
 
     # Output directory
     output_dir = IMAGE_GEN_OUTPUT_DIR / "space" / scene_type
@@ -206,11 +218,8 @@ def get_space_config(
         output_dir=output_dir,
         prompt=final_prompt,
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-
         scheduler_name=SPACE_SETTINGS["scheduler"],
-
         neg_prompt=SPACE_NEGATIVE,
-
         width=width,
         height=height,
         steps=SPACE_SETTINGS["steps"],
@@ -221,6 +230,7 @@ def get_space_config(
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def space_nebula(prompt: str, **kwargs) -> PipelineConfigs:
     """Generate nebula/gas cloud scenes."""

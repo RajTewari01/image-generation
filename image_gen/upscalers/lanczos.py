@@ -27,7 +27,7 @@ def upscale(
     scale: float = 2.0,
     target_size: Optional[Tuple[int, int]] = None,
     sharpen: bool = True,
-    cinematic: bool = False
+    cinematic: bool = False,
 ) -> Image.Image:
     """
     High-quality Lanczos upscale with smart post-processing.
@@ -67,14 +67,10 @@ def upscale(
     print("   -> Applying two-pass sharpening...")
 
     # Pass 1: Gentle overall sharpening
-    img_sharp = img_resized.filter(
-        ImageFilter.UnsharpMask(radius=1.0, percent=80, threshold=2)
-    )
+    img_sharp = img_resized.filter(ImageFilter.UnsharpMask(radius=1.0, percent=80, threshold=2))
 
     # Pass 2: Edge enhancement (subtle)
-    img_sharp = img_sharp.filter(
-        ImageFilter.UnsharpMask(radius=2.0, percent=40, threshold=4)
-    )
+    img_sharp = img_sharp.filter(ImageFilter.UnsharpMask(radius=2.0, percent=40, threshold=4))
 
     # 4. Subtle Contrast Boost (adaptive)
     enhancer = ImageEnhance.Contrast(img_sharp)
@@ -113,8 +109,4 @@ def upscale_to_2k(image: Image.Image, sharpen: bool = True) -> Image.Image:
     aspect_ratio = image.size[1] / image.size[0]
     target_height = int(target_width * aspect_ratio)
 
-    return upscale(
-        image,
-        target_size=(target_width, target_height),
-        sharpen=sharpen
-    )
+    return upscale(image, target_size=(target_width, target_height), sharpen=sharpen)

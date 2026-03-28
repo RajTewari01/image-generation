@@ -35,23 +35,22 @@ GENERATED_OUTPUT.mkdir(parents=True, exist_ok=True)
 # =============================================================================
 
 CAR_STYLE_MAP = {
-    "sketch":    {"lora_key": "car_sketch",    "trigger": "car sketch",              "strength": 1.3},
-    "sedan":     {"lora_key": "car_sedan",     "trigger": "car",                     "strength": 0.8},
-    "retro":     {"lora_key": "car_retro",     "trigger": "retromoto",               "strength": 0.8},
-    "speedtail": {"lora_key": "car_speedtail", "trigger": "speedtail sport car",     "strength": 0.8},
-    "f1":        {"lora_key": "car_f1",        "trigger": "f1lm sports car",         "strength": 0.8},
-    "mx5":       {"lora_key": "car_mx5",       "trigger": "mx5na",                   "strength": 0.8},
-    "autohome":  {"lora_key": "car_autohome",  "trigger": "autohome car(hqhs5)",     "strength": 0.8},
-    "amsdr":     {"lora_key": "car_amsdr",     "trigger": "amsdr",                   "strength": 0.8},
+    "sketch": {"lora_key": "car_sketch", "trigger": "car sketch", "strength": 1.3},
+    "sedan": {"lora_key": "car_sedan", "trigger": "car", "strength": 0.8},
+    "retro": {"lora_key": "car_retro", "trigger": "retromoto", "strength": 0.8},
+    "speedtail": {"lora_key": "car_speedtail", "trigger": "speedtail sport car", "strength": 0.8},
+    "f1": {"lora_key": "car_f1", "trigger": "f1lm sports car", "strength": 0.8},
+    "mx5": {"lora_key": "car_mx5", "trigger": "mx5na", "strength": 0.8},
+    "autohome": {"lora_key": "car_autohome", "trigger": "autohome car(hqhs5)", "strength": 0.8},
+    "amsdr": {"lora_key": "car_amsdr", "trigger": "amsdr", "strength": 0.8},
     # New additions
-    "rx7":       {"lora_key": "car_rx7",       "trigger": "fd3s car vehicle",        "strength": 0.8},
-    "jetcar":    {"lora_key": "car_jetcar",    "trigger": "Hanshin5000",             "strength": 0.8},
-    "motorbike": {"lora_key": "car_motorbike", "trigger": "yhmotorbike",             "strength": 0.8},
+    "rx7": {"lora_key": "car_rx7", "trigger": "fd3s car vehicle", "strength": 0.8},
+    "jetcar": {"lora_key": "car_jetcar", "trigger": "Hanshin5000", "strength": 0.8},
+    "motorbike": {"lora_key": "car_motorbike", "trigger": "yhmotorbike", "strength": 0.8},
 }
 
 CarStyle = Literal[
-    "sketch", "sedan", "retro", "speedtail", "f1", "mx5",
-    "autohome", "amsdr", "rx7", "jetcar", "motorbike"
+    "sketch", "sedan", "retro", "speedtail", "f1", "mx5", "autohome", "amsdr", "rx7", "jetcar", "motorbike"
 ]
 
 # =============================================================================
@@ -59,10 +58,7 @@ CarStyle = Literal[
 # =============================================================================
 
 # The magic template that produces clean cars
-CAR_PROMPT_SUFFIX = (
-    "clean, smooth, whole car, noise free, "
-    "best quality, 16k, masterpiece, ultra hd"
-)
+CAR_PROMPT_SUFFIX = "clean, smooth, whole car, noise free, best quality, 16k, masterpiece, ultra hd"
 
 # Critical: Blocks film grain and noise - key to clean output
 CAR_NEGATIVE = (
@@ -74,8 +70,7 @@ CAR_NEGATIVE = (
 
 # Train/JetCar uses different prompt style
 TRAIN_PROMPT_SUFFIX = (
-    "train, locomotive, railroad tracks, train station, "
-    "best quality, ultra-detailed, illustration, scenery"
+    "train, locomotive, railroad tracks, train station, best quality, ultra-detailed, illustration, scenery"
 )
 
 TRAIN_NEGATIVE = (
@@ -87,43 +82,104 @@ TRAIN_NEGATIVE = (
 def _detect_car_style(prompt: str) -> CarStyle:
     """Detect car style from prompt keywords using scoring system."""
     import re
+
     prompt_lower = prompt.lower()
 
     # Style keywords with weights - based on CivitAI prompt analysis
     style_keywords = {
         "sketch": {"sketch": 3, "drawing": 2, "pencil": 2, "line art": 2, "lineart": 2, "illustration": 1},
         "sedan": {
-            "sedan": 3, "saloon": 2, "family car": 2, "four door": 1, "4 door": 1,
-            "luxury car": 2, "executive": 1, "bmw": 2, "mercedes": 2, "audi": 2,
-            "everyday": 1, "commute": 1
+            "sedan": 3,
+            "saloon": 2,
+            "family car": 2,
+            "four door": 1,
+            "4 door": 1,
+            "luxury car": 2,
+            "executive": 1,
+            "bmw": 2,
+            "mercedes": 2,
+            "audi": 2,
+            "everyday": 1,
+            "commute": 1,
         },
         "retro": {
-            "retro": 3, "vintage": 3, "classic": 2, "old school": 2, "retromoto": 3,
-            "70s": 2, "80s": 2, "60s": 2, "50s": 2, "1950s": 2, "1960s": 2, "1970s": 2, "1980s": 2,
-            "porsche": 3, "steampunk": 2, "bioshockpunk": 2, "film grain": 1, "grainy": 1,
-            "kodachrome": 2, "analog": 1, "retro car": 3, "old car": 2, "classic car": 3
+            "retro": 3,
+            "vintage": 3,
+            "classic": 2,
+            "old school": 2,
+            "retromoto": 3,
+            "70s": 2,
+            "80s": 2,
+            "60s": 2,
+            "50s": 2,
+            "1950s": 2,
+            "1960s": 2,
+            "1970s": 2,
+            "1980s": 2,
+            "porsche": 3,
+            "steampunk": 2,
+            "bioshockpunk": 2,
+            "film grain": 1,
+            "grainy": 1,
+            "kodachrome": 2,
+            "analog": 1,
+            "retro car": 3,
+            "old car": 2,
+            "classic car": 3,
         },
         "speedtail": {
-            "speedtail": 3, "mclaren speedtail": 3, "golden hour": 1, "lonely road": 1,
-            "sport car": 2, "sportscar": 2, "hypercar": 2
+            "speedtail": 3,
+            "mclaren speedtail": 3,
+            "golden hour": 1,
+            "lonely road": 1,
+            "sport car": 2,
+            "sportscar": 2,
+            "hypercar": 2,
         },
         "f1": {
-            "f1": 3, "f1lm": 3, "mclaren f1": 3, "mclaren": 3,
-            "formula": 2, "racing": 2, "racecar": 2, "formula one": 3, "race car": 2,
-            "synthwave": 1, "lightwave": 1
+            "f1": 3,
+            "f1lm": 3,
+            "mclaren f1": 3,
+            "mclaren": 3,
+            "formula": 2,
+            "racing": 2,
+            "racecar": 2,
+            "formula one": 3,
+            "race car": 2,
+            "synthwave": 1,
+            "lightwave": 1,
         },
         "mx5": {"mx5": 3, "miata": 3, "mazda mx": 3, "roadster": 2, "mx-5": 3, "na": 1},
         "autohome": {"autohome": 3, "chinese car": 2, "byd": 2, "geely": 2, "hqhs5": 3},
         "amsdr": {"taxi": 3, "cab": 2, "yellow cab": 3, "amsdr": 3, "street": 1, "city": 1, "urban": 1, "new york": 1},
         "rx7": {
-            "rx7": 3, "rx-7": 3, "fd3s": 3, "mazda rx": 3, "fd": 2,
-            "rotary": 2, "wankel": 2, "jdm": 2, "japanese car": 2,
-            "drift": 2, "initial d": 2, "night": 1, "cyberpunk": 1, "tokyo": 1, "neon": 1
+            "rx7": 3,
+            "rx-7": 3,
+            "fd3s": 3,
+            "mazda rx": 3,
+            "fd": 2,
+            "rotary": 2,
+            "wankel": 2,
+            "jdm": 2,
+            "japanese car": 2,
+            "drift": 2,
+            "initial d": 2,
+            "night": 1,
+            "cyberpunk": 1,
+            "tokyo": 1,
+            "neon": 1,
         },
         "jetcar": {"train": 3, "locomotive": 3, "railway": 2, "railroad": 2, "station": 1, "hanshin": 3},
         "motorbike": {
-            "motorbike": 3, "motorcycle": 3, "bike": 2, "yhmotorbike": 3,
-            "yamaha": 2, "honda": 1, "harley": 2, "superbike": 2, "rider": 1
+            "motorbike": 3,
+            "motorcycle": 3,
+            "bike": 2,
+            "yhmotorbike": 3,
+            "yamaha": 2,
+            "honda": 1,
+            "harley": 2,
+            "superbike": 2,
+            "rider": 1,
         },
     }
 
@@ -132,7 +188,7 @@ def _detect_car_style(prompt: str) -> CarStyle:
 
     for style, keywords in style_keywords.items():
         for keyword, weight in keywords.items():
-            if re.search(rf'\b{keyword}\b', prompt_lower):
+            if re.search(rf"\b{keyword}\b", prompt_lower):
                 scores[style] += weight
 
     # Get best style
@@ -147,8 +203,24 @@ def _detect_car_style(prompt: str) -> CarStyle:
 
 @register_pipeline(
     name="car",
-    keywords=["car", "vehicle", "automobile", "sedan", "rx7", "rx-7", "mx5", "miata", "f1",
-              "speedtail", "retro", "vintage", "classic car", "taxi", "train", "motorbike"],
+    keywords=[
+        "car",
+        "vehicle",
+        "automobile",
+        "sedan",
+        "rx7",
+        "rx-7",
+        "mx5",
+        "miata",
+        "f1",
+        "speedtail",
+        "retro",
+        "vintage",
+        "classic car",
+        "taxi",
+        "train",
+        "motorbike",
+    ],
     description="Car generation with LoRA styles for various vehicle types",
     types={
         "sketch": "Car sketch drawing style",
@@ -161,15 +233,15 @@ def _detect_car_style(prompt: str) -> CarStyle:
         "amsdr": "Taxi/urban street cars",
         "rx7": "Mazda RX7 FD3S JDM",
         "jetcar": "Trains and locomotives",
-        "motorbike": "Motorcycles and bikes"
-    }
+        "motorbike": "Motorcycles and bikes",
+    },
 )
 def get_car_config(
-        prompt: str,
-        style: CarStyle = None,
-        width: int = 768,
-        height: int = 512,
-        auto_detect: bool = True,
+    prompt: str,
+    style: CarStyle = None,
+    width: int = 768,
+    height: int = 512,
+    auto_detect: bool = True,
 ) -> PipelineConfigs:
     """
     Get Car pipeline configuration using proven settings.
@@ -211,10 +283,7 @@ def get_car_config(
 
     # Configure LoRA
     lora_path = LORA_MODELS[style_info["lora_key"]]
-    lora_config = LoraConfig(
-        lora_path=lora_path,
-        scale=style_info["strength"]
-    )
+    lora_config = LoraConfig(lora_path=lora_path, scale=style_info["strength"])
 
     print(f"[Cars] Mode: {style.upper()} | LoRA: {lora_path.name} | Trigger: '{trigger}'")
 
@@ -223,15 +292,15 @@ def get_car_config(
         output_dir=GENERATED_OUTPUT,
         prompt=final_prompt,
         neg_prompt=negative_prompt,
-        vae='realistic',  # ft_mse VAE for photorealistic output
+        vae="realistic",  # ft_mse VAE for photorealistic output
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
         embeddings=[],
         # DPMSolverMultistepScheduler with karras - matches your working script
         scheduler_name="dpm++_2m_karras",
         width=width,
         height=height,
-        steps=25,      # From your working script
-        cfg=7.0,       # From your working script (guidance_scale=7.0)
+        steps=25,  # From your working script
+        cfg=7.0,  # From your working script (guidance_scale=7.0)
         lora=[lora_config],
         c_net=[],
     )
@@ -249,7 +318,7 @@ if __name__ == "__main__":
     ]
 
     for style, prompt in test_cases:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         config = get_car_config(prompt, style=style)
         print(f"  Full Prompt: {config.prompt[:80]}...")
         print(f"  Negative: {config.neg_prompt[:50]}...")

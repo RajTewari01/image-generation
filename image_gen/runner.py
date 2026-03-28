@@ -45,23 +45,17 @@ def open_file(filepath: str):
         print(f"[ERROR] File not found: {filepath}")
         return
 
-    if platform.system() == 'Windows':
+    if platform.system() == "Windows":
         os.startfile(filepath)
-    elif platform.system() == 'Darwin':
-        subprocess.call(('open', filepath))
+    elif platform.system() == "Darwin":
+        subprocess.call(("open", filepath))
     else:
-        subprocess.call(('xdg-open', filepath))
+        subprocess.call(("xdg-open", filepath))
 
 
 def get_style_help(registry: dict) -> str:
     """Generate detailed help text for all styles."""
-    lines = [
-        "",
-        "=" * 70,
-        "AVAILABLE STYLES AND TYPES",
-        "=" * 70,
-        ""
-    ]
+    lines = ["", "=" * 70, "AVAILABLE STYLES AND TYPES", "=" * 70, ""]
 
     for name, info in sorted(registry.items()):
         lines.append(f"📦 --style {name}")
@@ -81,6 +75,7 @@ def get_style_help(registry: dict) -> str:
 
 class CustomHelpFormatter(argparse.RawDescriptionHelpFormatter):
     """Custom formatter for better help display."""
+
     def __init__(self, prog, indent_increment=2, max_help_position=40, width=100):
         super().__init__(prog, indent_increment, max_help_position, width)
 
@@ -114,7 +109,7 @@ def main():
 ╚═══════════════════════════════════════════════════════════════════════╝
         """,
         epilog=epilog,
-        formatter_class=CustomHelpFormatter
+        formatter_class=CustomHelpFormatter,
     )
 
     # Positional argument
@@ -122,39 +117,35 @@ def main():
         "prompt",
         type=str,
         nargs="?",  # Optional to allow --list without prompt
-        help="The image prompt describing what you want to generate"
+        help="The image prompt describing what you want to generate",
     )
 
     # Required style argument
     parser.add_argument(
-        "--style", "-s",
-        type=str,
-        choices=available_styles,
-        help="Which pipeline style to use (see below for options)"
+        "--style", "-s", type=str, choices=available_styles, help="Which pipeline style to use (see below for options)"
     )
 
     # Optional type (sub-style)
     parser.add_argument(
-        "--type", "-t",
-        type=str,
-        default=None,
-        help="Sub-type for the selected style (varies by style, see --list)"
+        "--type", "-t", type=str, default=None, help="Sub-type for the selected style (varies by style, see --list)"
     )
 
     # Aspect ratio override (forces dimensions regardless of prompt)
     parser.add_argument(
-        "--aspect", "-a",
+        "--aspect",
+        "-a",
         type=str,
         choices=["portrait", "landscape", "normal"],
         default=None,
-        help="Force aspect ratio: portrait (512x768), landscape (768x512), normal (512x512)"
+        help="Force aspect ratio: portrait (512x768), landscape (768x512), normal (512x512)",
     )
 
     # Add details flag (Diffusion upscaling - expensive)
     parser.add_argument(
-        "--add_details", "-d",
+        "--add_details",
+        "-d",
         action="store_true",
-        help="Use Diffusion upscaler to hallucinate details (slow, runs before ESRGAN)"
+        help="Use Diffusion upscaler to hallucinate details (slow, runs before ESRGAN)",
     )
 
     # Scheduler options
@@ -163,53 +154,34 @@ def main():
         type=str,
         choices=["euler_a", "dpm++_2m_karras", "dpm++_sde_karras", "dpm++_2m_sde_karras", "ddim", "lms"],
         default=None,
-        help="Scheduler to use (default: pipeline-specific)"
+        help="Scheduler to use (default: pipeline-specific)",
     )
 
     # Seed for reproducibility
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=None,
-        help="Random seed for reproducibility (optional)"
-    )
+    parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility (optional)")
 
     # Steps override
     parser.add_argument(
-        "--steps",
-        type=int,
-        default=None,
-        help="Number of inference steps (default: pipeline-specific, max 45)"
+        "--steps", type=int, default=None, help="Number of inference steps (default: pipeline-specific, max 45)"
     )
 
     # ControlNet options
-    parser.add_argument(
-        "--control_image",
-        type=str,
-        default=None,
-        help="Path to image for ControlNet guidance"
-    )
+    parser.add_argument("--control_image", type=str, default=None, help="Path to image for ControlNet guidance")
 
     parser.add_argument(
         "--control_type",
         type=str,
         choices=["canny", "depth", "openpose"],
         default=None,
-        help="Type of ControlNet to use with --control_image"
+        help="Type of ControlNet to use with --control_image",
     )
 
     # Output options
-    parser.add_argument(
-        "--open", "-o",
-        action="store_true",
-        help="Open the generated image after saving"
-    )
+    parser.add_argument("--open", "-o", action="store_true", help="Open the generated image after saving")
 
     # List all styles
     parser.add_argument(
-        "--list", "-l",
-        action="store_true",
-        help="Show all available styles and their types, then exit"
+        "--list", "-l", action="store_true", help="Show all available styles and their types, then exit"
     )
 
     args = parser.parse_args()
@@ -235,14 +207,14 @@ def main():
             return 1
 
     # Get the config function from registry
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("🎨 NEURAL CITADEL - Image Generator")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"📦 Style: {args.style.upper()}")
     if args.type:
         print(f"🔹 Type: {args.type}")
     print(f"📝 Prompt: {args.prompt[:60]}...")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     try:
         pipeline_info = registry[args.style]
@@ -313,6 +285,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Error loading config: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
@@ -322,10 +295,10 @@ def main():
         engine = DiffusionEngine()
         saved_path = engine.generate(config)
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("✨ SUCCESS!")
         print(f"📁 Image saved at: {saved_path}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         engine.unload()
 
@@ -341,6 +314,7 @@ def main():
     except Exception as e:
         print(f"\n❌ Critical Engine Error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

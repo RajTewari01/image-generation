@@ -38,27 +38,27 @@ MODEL_MAP = {
     "asian": {
         "file": ETHNICITY_DIR / "asianrealisticSdlife_v60.safetensors",
         "trigger": "girlvn01",
-        "description": "East Asian - Vietnamese/Japanese/Korean"
+        "description": "East Asian - Vietnamese/Japanese/Korean",
     },
     "indian": {
         "file": ETHNICITY_DIR / "desiTadkaSD15Checkpoint_v10.safetensors",
         "trigger": "desilatte, desimocha",
-        "description": "South Asian - Indian/Desi"
+        "description": "South Asian - Indian/Desi",
     },
     "russian": {
         "file": ETHNICITY_DIR / "paamaRUSSIANWOMAN_paamaUKRAINEWOMANV1.safetensors",
         "trigger": "russia",
-        "description": "Eastern European - Russian/Ukrainian"
+        "description": "Eastern European - Russian/Ukrainian",
     },
     "european": {
         "file": ETHNICITY_DIR / "kawaiiRealistic_v06.safetensors",
         "trigger": "european",
-        "description": "Western European"
+        "description": "Western European",
     },
     "chinese": {
         "file": ETHNICITY_DIR / "majicmixRealistic_v7.safetensors",
         "trigger": "chinese",
-        "description": "Chinese realistic"
+        "description": "Chinese realistic",
     },
 }
 
@@ -92,32 +92,82 @@ def _detect_ethnicity(prompt: str) -> EthnicityType:
     Returns: 'indian', 'asian', 'chinese', 'russian', or 'european'
     """
     import re
+
     prompt_lower = prompt.lower()
 
     # Ethnicity keywords with weights
     ethnicity_scores = {
         "indian": {
-            "indian": 3, "desi": 3, "south asian": 2, "bollywood": 2, "hindi": 2,
-            "punjabi": 2, "tamil": 2, "bengali": 2, "saree": 2, "sari": 2,
-            "mumbai": 1, "delhi": 1, "hindu": 1, "curry": 1, "bindi": 2,
+            "indian": 3,
+            "desi": 3,
+            "south asian": 2,
+            "bollywood": 2,
+            "hindi": 2,
+            "punjabi": 2,
+            "tamil": 2,
+            "bengali": 2,
+            "saree": 2,
+            "sari": 2,
+            "mumbai": 1,
+            "delhi": 1,
+            "hindu": 1,
+            "curry": 1,
+            "bindi": 2,
         },
         "russian": {
-            "russian": 3, "ukrainian": 3, "slavic": 2, "eastern european": 2,
-            "moscow": 2, "siberian": 1, "slav": 2, "russia": 3, "ukraine": 2,
+            "russian": 3,
+            "ukrainian": 3,
+            "slavic": 2,
+            "eastern european": 2,
+            "moscow": 2,
+            "siberian": 1,
+            "slav": 2,
+            "russia": 3,
+            "ukraine": 2,
         },
         "chinese": {
-            "chinese": 3, "china": 3, "shanghai": 2, "beijing": 2, "hong kong": 2,
-            "mandarin": 1, "cantonese": 1, "qipao": 2, "hanfu": 2, "dynasty": 1,
+            "chinese": 3,
+            "china": 3,
+            "shanghai": 2,
+            "beijing": 2,
+            "hong kong": 2,
+            "mandarin": 1,
+            "cantonese": 1,
+            "qipao": 2,
+            "hanfu": 2,
+            "dynasty": 1,
         },
         "asian": {
-            "asian": 2, "vietnamese": 3, "japanese": 3, "korean": 3, "k-pop": 2,
-            "thai": 2, "vietnam": 2, "japan": 2, "korea": 2, "tokyo": 1,
-            "seoul": 1, "anime": 1, "idol": 2, "kpop": 2,
+            "asian": 2,
+            "vietnamese": 3,
+            "japanese": 3,
+            "korean": 3,
+            "k-pop": 2,
+            "thai": 2,
+            "vietnam": 2,
+            "japan": 2,
+            "korea": 2,
+            "tokyo": 1,
+            "seoul": 1,
+            "anime": 1,
+            "idol": 2,
+            "kpop": 2,
         },
         "european": {
-            "european": 3, "western": 2, "american": 2, "british": 2, "french": 2,
-            "german": 2, "italian": 2, "spanish": 2, "blonde": 2, "caucasian": 2,
-            "white": 1, "scandinavian": 2, "nordic": 2, "celtic": 1,
+            "european": 3,
+            "western": 2,
+            "american": 2,
+            "british": 2,
+            "french": 2,
+            "german": 2,
+            "italian": 2,
+            "spanish": 2,
+            "blonde": 2,
+            "caucasian": 2,
+            "white": 1,
+            "scandinavian": 2,
+            "nordic": 2,
+            "celtic": 1,
         },
     }
 
@@ -126,7 +176,7 @@ def _detect_ethnicity(prompt: str) -> EthnicityType:
 
     for ethnicity, keywords in ethnicity_scores.items():
         for keyword, weight in keywords.items():
-            if re.search(rf'\b{keyword}\b', prompt_lower):
+            if re.search(rf"\b{keyword}\b", prompt_lower):
                 scores[ethnicity] += weight
 
     # Get the ethnicity with highest score
@@ -141,22 +191,35 @@ def _detect_ethnicity(prompt: str) -> EthnicityType:
 
 @register_pipeline(
     name="ethnicity",
-    keywords=["indian", "asian", "russian", "chinese", "european", "desi", "korean",
-              "japanese", "vietnamese", "slavic", "ukrainian", "bollywood", "kpop"],
+    keywords=[
+        "indian",
+        "asian",
+        "russian",
+        "chinese",
+        "european",
+        "desi",
+        "korean",
+        "japanese",
+        "vietnamese",
+        "slavic",
+        "ukrainian",
+        "bollywood",
+        "kpop",
+    ],
     description="Realistic portraits of different ethnicities with specialized models",
     types={
         "asian": "East Asian (Vietnamese/Japanese/Korean)",
         "indian": "South Asian/Desi portraits",
         "russian": "Eastern European (Russian/Ukrainian)",
         "european": "Western European",
-        "chinese": "Chinese realistic"
-    }
+        "chinese": "Chinese realistic",
+    },
 )
 def get_ethnicity_config(
-        prompt: str,
-        ethnicity: Optional[EthnicityType] = None,
-        aspect: Optional[Literal["portrait", "mid", "wide"]] = "portrait",
-        auto_detect: bool = True
+    prompt: str,
+    ethnicity: Optional[EthnicityType] = None,
+    aspect: Optional[Literal["portrait", "mid", "wide"]] = "portrait",
+    auto_detect: bool = True,
 ) -> PipelineConfigs:
     """
     Get Ethnicity Portrait pipeline configuration.
@@ -207,12 +270,10 @@ def get_ethnicity_config(
     # Robust Polaroid Detection
     # Matches: polaroid, poloroid, instant photo, instax
     import re
-    if re.search(r'\b(polaroid|poloroid|instax|instant photo)\b', prompt.lower()):
+
+    if re.search(r"\b(polaroid|poloroid|instax|instant photo)\b", prompt.lower()):
         print("📸 Polaroid Style Detected: Adding LoRA")
-        loras.append(LoraConfig(
-            lora_path=LORA_MODELS["polaroid"],
-            scale=0.8
-        ))
+        loras.append(LoraConfig(lora_path=LORA_MODELS["polaroid"], scale=0.8))
 
     return PipelineConfigs(
         base_model=selected_model,
@@ -236,21 +297,26 @@ def get_ethnicity_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def asian_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """East Asian portrait (Vietnamese/Japanese/Korean)."""
     return get_ethnicity_config(prompt, ethnicity="asian", **kwargs)
+
 
 def indian_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """South Asian/Desi portrait (Indian)."""
     return get_ethnicity_config(prompt, ethnicity="indian", **kwargs)
 
+
 def russian_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """Eastern European portrait (Russian/Ukrainian)."""
     return get_ethnicity_config(prompt, ethnicity="russian", **kwargs)
 
+
 def european_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """Western European portrait."""
     return get_ethnicity_config(prompt, ethnicity="european", **kwargs)
+
 
 def chinese_portrait(prompt: str, **kwargs) -> PipelineConfigs:
     """Chinese realistic portrait."""
@@ -269,7 +335,7 @@ if __name__ == "__main__":
     ]
 
     for (prompt,) in test_cases:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {prompt[:50]}...")
         config = get_ethnicity_config(prompt)
         print(f"  Model: {config.base_model.name}")

@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 set_verbosity_error()
 
+
 def upscale(
     base_pipe: "StableDiffusionPipeline",
     image: Image.Image,
@@ -93,7 +94,7 @@ def upscale(
             strength=strength,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
-            output_type="pil"
+            output_type="pil",
         ).images[0]
 
         print(f"[DONE] Diffusion upscale complete: {upscaled.size}")
@@ -112,7 +113,7 @@ def upscale_with_fallback(
     prompt: str,
     negative_prompt: str = "",
     scale_factor: float = 1.5,
-    **kwargs
+    **kwargs,
 ) -> Image.Image:
     """
     Upscale with automatic fallback to CPU Lanczos on OOM.
@@ -127,7 +128,7 @@ def upscale_with_fallback(
             prompt=prompt,
             negative_prompt=negative_prompt,
             scale_factor=scale_factor,
-            **kwargs
+            **kwargs,
         )
     except Exception as e:
         print(f"[!] Diffusion upscale failed: {e}")

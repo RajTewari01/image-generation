@@ -52,21 +52,29 @@ COMMON_NEGATIVE = f"{NEGATIVE_EMBEDDING_TRIGGER}, (worst quality, low quality:1.
 
 @register_pipeline(
     name="difconsistency",
-    keywords=["difconsistency", "consistent", "photo consistency", "photography",
-              "photorealistic", "flickr", "instagram", "canon"],
+    keywords=[
+        "difconsistency",
+        "consistent",
+        "photo consistency",
+        "photography",
+        "photorealistic",
+        "flickr",
+        "instagram",
+        "canon",
+    ],
     description="Ultra-consistent photorealistic images with DifConsistency ecosystem",
     types={
         "photo": "Photo LoRA for balanced realism",
         "detail": "Detail LoRA for texture and sharpness",
-        "raw": "Base checkpoint only"
-    }
+        "raw": "Base checkpoint only",
+    },
 )
 def get_config(
-        prompt: str,
-        style: Literal["photo", "detail", "raw"] = "photo",
-        width: int = 512,
-        height: int = 768,
-        use_template: bool = True
+    prompt: str,
+    style: Literal["photo", "detail", "raw"] = "photo",
+    width: int = 512,
+    height: int = 768,
+    use_template: bool = True,
 ) -> PipelineConfigs:
     """
     Get DifConsistency pipeline configuration.
@@ -93,16 +101,15 @@ def get_config(
 
     if style == "photo":
         print("[DifConsistency] Mode: PHOTO (Balance + Realism)")
-        loras.append(LoraConfig(
-            lora_path=LORA_MODELS["dif_consistency_photo"],
-            scale=0.5
-        ))
+        loras.append(LoraConfig(lora_path=LORA_MODELS["dif_consistency_photo"], scale=0.5))
     elif style == "detail":
         print("[DifConsistency] Mode: DETAIL (Texture + Sharpness)")
-        loras.append(LoraConfig(
-            lora_path=LORA_MODELS["dif_consistency_detail"],
-            scale=0.55  # Recommended strength
-        ))
+        loras.append(
+            LoraConfig(
+                lora_path=LORA_MODELS["dif_consistency_detail"],
+                scale=0.55,  # Recommended strength
+            )
+        )
     else:
         print("[DifConsistency] Mode: RAW (Base Checkpoint)")
 
@@ -113,17 +120,14 @@ def get_config(
         prompt=final_prompt,
         neg_prompt=COMMON_NEGATIVE,
         style_type="realistic",  # Auto-selects R-ESRGAN 4x+
-
         # Critical: Use the custom VAE and Embedding
         vae=VAE_DIFCONSISTENCY,
         embeddings=[EMBEDDING_DIFCONSISTENCY_NEG],
-
         scheduler_name="dpm++_2m_karras",
         width=width,
         height=height,
         steps=25,
         cfg=6.0,  # Slightly lower CFG recommended for realism
-
         lora=loras,
         c_net=[],
     )
@@ -133,13 +137,16 @@ def get_config(
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
+
 def photo_consistency(prompt: str, **kwargs) -> PipelineConfigs:
     """Quick config for photorealistic results."""
     return get_config(prompt, style="photo", **kwargs)
 
+
 def detail_consistency(prompt: str, **kwargs) -> PipelineConfigs:
     """Quick config for high-detail results."""
     return get_config(prompt, style="detail", **kwargs)
+
 
 def raw_consistency(prompt: str, **kwargs) -> PipelineConfigs:
     """Quick config using only the base checkpoint."""
@@ -157,7 +164,7 @@ if __name__ == "__main__":
     ]
 
     for p in test_prompts:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Prompt: {p}")
         config = photo_consistency(p)
         print(f"Model: {config.base_model.name}")
