@@ -1,24 +1,21 @@
+import os
+import sys
+
+import jobs
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-
-import sys
-import os
-
 from schemas import GenerateRequest, JobStatusResponse
-import jobs
 
 app = FastAPI(
-    title="Image Gen Lite API",
-    description="Headless AI Inference Gateway for Stable Diffusion",
-    version="1.0.0"
+    title="Image Gen Lite API", description="Headless AI Inference Gateway for Stable Diffusion", version="1.0.0"
 )
 
 # CORS Middleware for React Vite client (typically running on localhost:5173)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to your domain
+    allow_origins=["*"],  # In production, restrict this to your domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,7 +27,7 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 IMAGE_DIR = os.path.join(ROOT_DIR, "output", "images")
 if not os.path.exists(IMAGE_DIR):
     os.makedirs(IMAGE_DIR)
-    
+
 app.mount("/images", StaticFiles(directory=IMAGE_DIR), name="images")
 
 
@@ -54,16 +51,14 @@ def list_pipelines():
     """
     try:
         sys.path.insert(0, ROOT_DIR)
-        from image_gen.pipeline.registry import get_all_pipelines, discover_pipelines
+        from image_gen.pipeline.registry import discover_pipelines, get_all_pipelines
+
         discover_pipelines()
-        
+
         pipelines = get_all_pipelines()
         out = {}
         for name, info in pipelines.items():
-            out[name] = {
-                "description": info.get("description", ""),
-                "types": info.get("types", {})
-            }
+            out[name] = {"description": info.get("description", ""), "types": info.get("types", {})}
         return {"pipelines": out}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load pipelines: {str(e)}")
