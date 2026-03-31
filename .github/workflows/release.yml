@@ -1,4 +1,4 @@
-name: Official Release Pipeline
+name: 🚀 Official Release Pipeline
 
 on:
   push:
@@ -8,59 +8,221 @@ on:
 permissions:
   contents: write
 
+env:
+  PYTHON_VERSION: "3.10"
+
 jobs:
-  build_and_release:
-    name: Package and Publish Framework
+  # ─────────────────────────────────────────────────────────────
+  # Stage 1: Quality Gate — Must pass before release is created
+  # ─────────────────────────────────────────────────────────────
+  quality_gate:
+    name: 🛂 Pre-Release Quality Gate
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
 
-      - name: Build Core Engine Wheel
+      - name: Install Linting Tools
+        run: pip install ruff
+
+      - name: Ruff Lint Check
+        run: ruff check . --output-format=github
+
+      - name: Ruff Format Check
+        run: ruff format --check .
+
+      - name: Verify Core Module Integrity
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -e .
+          python -c "from image_gen import __version__; print('✅ Core Package:', __version__)"
+          python -c "from configs.paths import DIFFUSION_MODELS; print('✅ Config Layer OK')"
+          python -c "from image_gen.pipeline.registry import discover_pipelines; discover_pipelines(); print('✅ Pipeline Registry OK')"
+
+      - name: Verify No Leaked Secrets or Weights
+        run: |
+          echo "🔍 Scanning for accidentally committed artifacts..."
+          violations=0
+          for ext in safetensors ckpt pth bin onnx; do
+            files=$(find . -name "*.$ext" -not -path "./.git/*" 2>/dev/null)
+            if [ -n "$files" ]; then
+              echo "::error::Found .$ext files in repo: $files"
+              violations=1
+            fi
+          done
+          if [ $violations -eq 0 ]; then
+            echo "✅ No sensitive files detected"
+          else
+            exit 1
+          fi
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 2: Build Distributable Artifacts
+  # ─────────────────────────────────────────────────────────────
+  build:
+    name: 📦 Build Release Artifacts
+    needs: quality_gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Build Python Wheel & Source Distribution
         run: |
           python -m pip install --upgrade pip build wheel
           python -m build
+          echo "📦 Built artifacts:"
+          ls -lh dist/
 
-      - name: Bundle Deployment Package
+      - name: Bundle Production Deployment Package
         run: |
-          mkdir deploy_package
-          cp -r api deploy_package/
-          cp -r configs deploy_package/
-          cp -r image_gen deploy_package/
-          cp requirements.txt deploy_package/
-          cp README.md deploy_package/
-          zip -r Image-Gen-Lite-Production-Core.zip deploy_package/
+          VERSION=${{ github.ref_name }}
+          PACKAGE_NAME="ImageGen-Lite-${VERSION}-Production"
 
-      - name: Generate Changelog
-        id: changelog
+          mkdir -p "${PACKAGE_NAME}/api"
+          mkdir -p "${PACKAGE_NAME}/configs"
+          mkdir -p "${PACKAGE_NAME}/image_gen"
+          mkdir -p "${PACKAGE_NAME}/docs"
+
+          cp -r api/* "${PACKAGE_NAME}/api/"
+          cp -r configs/* "${PACKAGE_NAME}/configs/"
+          cp -r image_gen/* "${PACKAGE_NAME}/image_gen/"
+          cp -r docs/* "${PACKAGE_NAME}/docs/" 2>/dev/null || true
+
+          cp pyproject.toml "${PACKAGE_NAME}/"
+          cp requirements.txt "${PACKAGE_NAME}/" 2>/dev/null || true
+          cp README.md "${PACKAGE_NAME}/"
+          cp LICENSE "${PACKAGE_NAME}/" 2>/dev/null || true
+
+          # Create a quick-start script
+          cat > "${PACKAGE_NAME}/START_API.sh" << 'SCRIPT'
+          #!/bin/bash
+          echo "🚀 Image Gen Lite — Starting FastAPI Gateway..."
+          cd api && python main.py
+          SCRIPT
+          chmod +x "${PACKAGE_NAME}/START_API.sh"
+
+          zip -r "${PACKAGE_NAME}.zip" "${PACKAGE_NAME}/"
+          tar -czf "${PACKAGE_NAME}.tar.gz" "${PACKAGE_NAME}/"
+
+          echo "📦 Deployment packages:"
+          ls -lh ${PACKAGE_NAME}.*
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+            ImageGen-Lite-*.zip
+            ImageGen-Lite-*.tar.gz
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 3: Generate Professional Release Notes
+  # ─────────────────────────────────────────────────────────────
+  release:
+    name: 🎉 Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: artifacts/
+
+      - name: Generate Release Notes
+        id: notes
         run: |
-          # Grabbing notes from the latest tag annotation and commits
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          git tag -l --format='%(contents)' ${{ github.ref_name }} >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "## Automated Release Framework Build" >> $GITHUB_OUTPUT
-          echo "- **Commit Hash**: ${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "- Includes Core Python \`Wheel\` binaries for production deployment." >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          VERSION=${{ github.ref_name }}
+          PREV_TAG=$(git tag --sort=-v:refname | head -2 | tail -1)
+          COMMIT_COUNT=$(git rev-list ${PREV_TAG}..HEAD --count 2>/dev/null || echo "N/A")
+          TAG_MSG=$(git tag -l --format='%(contents)' ${VERSION} 2>/dev/null || echo "")
+
+          cat > release_notes.md << NOTES
+          # 🎨 Image Gen Lite Framework ${VERSION}
+
+          > A production-grade Stable Diffusion inference engine optimized for 4GB VRAM GPUs.
+          > Made by **Biswadeep Tewari**
+
+          ${TAG_MSG}
+
+          ---
+
+          ## 📦 Downloads
+
+          | Platform | File | Description |
+          |----------|------|-------------|
+          | 🐍 Python Wheel | \`image_gen-*.whl\` | Install via \`pip install image_gen-*.whl\` |
+          | 📁 Production Bundle | \`ImageGen-Lite-${VERSION}-Production.zip\` | Full deployment package with API gateway |
+          | 📁 Source Archive | \`ImageGen-Lite-${VERSION}-Production.tar.gz\` | For Linux/macOS deployments |
+
+          ## 🚀 Quick Installation
+
+          \`\`\`bash
+          # Option 1: Install the wheel directly
+          pip install image_gen-*.whl
+
+          # Option 2: Unzip the Production Bundle
+          unzip ImageGen-Lite-${VERSION}-Production.zip
+          cd ImageGen-Lite-${VERSION}-Production
+          pip install -e .
+          bash START_API.sh
+          \`\`\`
+
+          ## 🔧 Build Info
+
+          - **Commit**: \`${{ github.sha }}\`
+          - **Commits since last release**: ${COMMIT_COUNT}
+          - **Python**: ${{ env.PYTHON_VERSION }}+
+          - **Engine**: PyTorch 2.0+ / Diffusers 0.25+
+          - **Hardware Target**: NVIDIA GTX 1650 (4GB VRAM)
+
+          ---
+
+          *See the [full changelog](https://github.com/${{ github.repository }}/commits/${VERSION}) for details.*
+          NOTES
+
+          echo "Generated release notes for ${VERSION}"
 
       - name: Publish Official GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Image Gen Lite Framework ${{ github.ref_name }}
-          body: ${{ steps.changelog.outputs.notes }}
+          name: "🎨 Image Gen Lite Framework ${{ github.ref_name }}"
+          body_path: release_notes.md
           draft: false
           prerelease: false
+          generate_release_notes: true
+          make_latest: true
           files: |
-            Image-Gen-Lite-Production-Core.zip
-            dist/*.whl
-            dist/*.tar.gz
+            artifacts/dist/*.whl
+            artifacts/dist/*.tar.gz
+            artifacts/ImageGen-Lite-*.zip
+            artifacts/ImageGen-Lite-*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
