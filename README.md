@@ -9,6 +9,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org)
 [![Diffusers](https://img.shields.io/badge/🤗_Diffusers-0.25%2B-FFD21E?style=for-the-badge)](https://huggingface.co/docs/diffusers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
+[![Version: v1.1.0](https://img.shields.io/badge/Version-v1.1.0-0ea5e9?style=for-the-badge)](https://github.com/RajTewari01/image-generation/releases)
 
 *A modular, plugin-based Stable Diffusion inference framework **designed for learning and real-world deployment**. Built with aggressive layer offloading to run production workloads locally on a GTX 1650 (4 GB VRAM).*
 
